@@ -1,0 +1,52 @@
+use std::fmt;
+
+use crate::lexer::{self, display::PosDisplay};
+
+#[derive(Debug, Clone)]
+pub enum Error {
+    TooManyArguments {
+        keyword_pos: lexer::Pos,
+        overflow_pos: lexer::Pos,
+    },
+    StrandedArguments {
+        stranded_pos: lexer::Pos,
+    },
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::TooManyArguments {
+                keyword_pos,
+                overflow_pos,
+            } => {
+                write!(
+                    f,
+                    "found too many arguments {} while parsing command {}",
+                    PosDisplay(overflow_pos),
+                    PosDisplay(keyword_pos)
+                )
+            }
+            Self::StrandedArguments { stranded_pos } => {
+                write!(
+                    f,
+                    "found arguments {} in the beginning of source",
+                    PosDisplay(stranded_pos)
+                )
+            }
+        }
+    }
+}
+
+impl Error {
+    pub fn help(&self) -> &'static str {
+        match self {
+            Self::TooManyArguments { .. } => {
+                "in ICN commands have at most 6 arguments; did you miss a command somewhere before the arguments?"
+            }
+            Self::StrandedArguments { .. } => "did you miss a command before these arguments?",
+        }
+    }
+}
+
+impl std::error::Error for Error {}
