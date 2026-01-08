@@ -48,6 +48,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "rotur-icn-lowering"
+version = "0.1.0"
+dependencies = [
+ "rotur-icn-syntax",
+]
+
+[[package]]
 name = "rotur-icn-syntax"
 version = "0.1.0"
 dependencies = [

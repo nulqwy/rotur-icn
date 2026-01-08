@@ -30,7 +30,7 @@ impl fmt::Display for Error {
             Self::StrandedArguments { stranded_pos } => {
                 write!(
                     f,
-                    "found arguments {} in the beginning of source",
+                    "found arguments {} at the beginning of the source",
                     PosDisplay(stranded_pos)
                 )
             }
@@ -39,6 +39,13 @@ impl fmt::Display for Error {
 }
 
 impl Error {
+    pub fn message(&self) -> &'static str {
+        match self {
+            Self::TooManyArguments { .. } => "found too many arguments while parsing a command",
+            Self::StrandedArguments { .. } => "found arguments at the beginning of the source",
+        }
+    }
+
     pub fn help(&self) -> &'static str {
         match self {
             Self::TooManyArguments { .. } => {

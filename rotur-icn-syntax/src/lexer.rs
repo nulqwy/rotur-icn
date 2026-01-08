@@ -3,7 +3,7 @@ mod error;
 mod token;
 
 pub use error::{Error, ErrorKind};
-pub use token::{Colour, Keyword, Literal, Number, Token};
+pub use token::{Colour, Keyword, Literal, LiteralKind, Number, Token};
 
 pub type Loc = lexgen_util::Loc;
 pub type Pos = (Loc, Loc);
@@ -54,7 +54,7 @@ lexgen::lexer! {
 
     '#' $$ascii_hexdigit $$ascii_hexdigit $$ascii_hexdigit $$ascii_hexdigit $$ascii_hexdigit $$ascii_hexdigit => |lexer| {
         let n = u32::from_str_radix(&lexer.match_()[1..], 16).expect("regex guarantees a valid u32 (u24)");
-        let [_, r, g, b] = n.to_be_bytes();
+        let [b, g, r, _] = n.to_le_bytes();
         lexer.return_(Token::Literal(Literal::Colour(Colour { r, g, b })))
     },
 

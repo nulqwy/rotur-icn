@@ -1,6 +1,6 @@
 use std::fmt;
 
-use super::{Colour, Keyword, Literal, Loc, Number, Pos, Token};
+use super::{Colour, Keyword, Literal, LiteralKind, Loc, Number, Pos, Token};
 
 pub struct LocDisplay<'l>(pub &'l Loc);
 
@@ -45,6 +45,15 @@ impl fmt::Display for Literal {
         match self {
             Self::Colour(col) => write!(f, "{col}"),
             Self::Number(n) => write!(f, "{n}"),
+        }
+    }
+}
+
+impl fmt::Display for LiteralKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Colour => write!(f, "colour"),
+            Self::Number => write!(f, "number"),
         }
     }
 }

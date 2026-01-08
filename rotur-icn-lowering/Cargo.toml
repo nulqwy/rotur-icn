@@ -1,0 +1,7 @@
+[package]
+name = "rotur-icn-lowering"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+rotur-icn-syntax = { version = "0.1.0", path = "../rotur-icn-syntax" }
