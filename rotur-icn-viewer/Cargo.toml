@@ -1,0 +1,11 @@
+[package]
+name = "rotur-icn-viewer"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ansi_term = "0.12.1"
+codespan-reporting = "0.13.1"
+gumdrop = "0.8.1"
+rotur-icn-pipeline = { version = "0.1.0", path = "../rotur-icn-pipeline", features = ["diagnostics"] }
+rotur-icn-renderer = { version = "0.1.0", path = "../rotur-icn-renderer" }

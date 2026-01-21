@@ -1,3 +1,7 @@
 [workspace]
 resolver = "3"
-members = ["rotur-icn-lowering","rotur-icn-syntax"]
+members = ["rotur-icn-compiler", "rotur-icn-pipeline", "rotur-icn-renderer", "rotur-icn-syntax", "rotur-icn-units", "rotur-icn-viewer"]
+
+[profile.release]
+lto = "thin"
+strip = "debuginfo"

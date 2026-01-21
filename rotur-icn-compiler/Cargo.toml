@@ -1,7 +1,8 @@
 [package]
-name = "rotur-icn-lowering"
+name = "rotur-icn-compiler"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 rotur-icn-syntax = { version = "0.1.0", path = "../rotur-icn-syntax" }
+rotur-icn-units = { version = "0.1.0", path = "../rotur-icn-units" }

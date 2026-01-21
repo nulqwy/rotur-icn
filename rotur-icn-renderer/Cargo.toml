@@ -1,10 +1,8 @@
 [package]
-name = "rotur-icn-syntax"
+name = "rotur-icn-renderer"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-arrayvec = "0.7.6"
-lexgen = "0.16.0"
-lexgen_util = "0.16.0"
+rotur-icn-compiler = { version = "0.1.0", path = "../rotur-icn-compiler" }
 rotur-icn-units = { version = "0.1.0", path = "../rotur-icn-units" }

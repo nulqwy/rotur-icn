@@ -34,6 +34,15 @@ impl fmt::Display for ErrorKind {
 }
 
 impl ErrorKind {
+    pub fn code(&self) -> &'static str {
+        match self {
+            Self::InvalidColour => "EL00",
+            Self::StrandedNumber => "EL01",
+            Self::StrandedColour => "EL02",
+            Self::InvalidToken => "EL03",
+        }
+    }
+
     pub fn help(&self) -> &'static str {
         match self {
             Self::StrandedColour | Self::InvalidColour => {

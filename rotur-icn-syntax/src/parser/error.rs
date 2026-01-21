@@ -39,6 +39,13 @@ impl fmt::Display for Error {
 }
 
 impl Error {
+    pub fn code(&self) -> &'static str {
+        match self {
+            Self::TooManyArguments { .. } => "EP00",
+            Self::StrandedArguments { .. } => "EP01",
+        }
+    }
+
     pub fn message(&self) -> &'static str {
         match self {
             Self::TooManyArguments { .. } => "found too many arguments while parsing a command",
@@ -49,7 +56,7 @@ impl Error {
     pub fn help(&self) -> &'static str {
         match self {
             Self::TooManyArguments { .. } => {
-                "in ICN commands have at most 6 arguments; did you miss a command somewhere before the arguments?"
+                "in ICN commands have at most 6 arguments; did you miss a command somewhere within the arguments?"
             }
             Self::StrandedArguments { .. } => "did you miss a command before these arguments?",
         }

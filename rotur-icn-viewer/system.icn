@@ -1,0 +1,4 @@
+dot 0 0
+c #f13 dot -13 50
+c #70f dot -20 20
+w 30 c #fbb dot 70 70

@@ -1,11 +1,13 @@
+use rotur_icn_units::{Colour, Number};
+
 #[derive(Debug, Clone)]
 pub enum Token<'s> {
-    Keyword(Keyword<'s>),
+    Identifier(Identifier<'s>),
     Literal(Literal),
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Keyword<'s> {
+pub struct Identifier<'s> {
     pub value: &'s str,
 }
 
@@ -40,26 +42,4 @@ impl<'l> From<&'l Literal> for LiteralKind {
     fn from(value: &'l Literal) -> Self {
         value.kind()
     }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct Colour {
-    pub b: u8,
-    pub g: u8,
-    pub r: u8,
-}
-
-impl Default for Colour {
-    fn default() -> Self {
-        Self {
-            r: 0xff,
-            g: 0,
-            b: 0xff,
-        }
-    }
-}
-
-#[derive(Debug, Default, Clone, Copy)]
-pub struct Number {
-    pub value: f64,
 }

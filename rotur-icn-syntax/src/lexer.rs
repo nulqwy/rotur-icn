@@ -2,8 +2,10 @@ pub mod display;
 mod error;
 mod token;
 
+use rotur_icn_units::{Colour, Number};
+
 pub use error::{Error, ErrorKind};
-pub use token::{Colour, Keyword, Literal, LiteralKind, Number, Token};
+pub use token::{Identifier, Literal, LiteralKind, Token};
 
 pub type Loc = lexgen_util::Loc;
 pub type Pos = (Loc, Loc);
@@ -19,14 +21,14 @@ lexgen::lexer! {
     // ------- KEYWORDS -------
 
     $$ascii_alphabetic+ => |lexer| {
-        lexer.return_(Token::Keyword(Keyword { value: lexer.match_() }))
+        lexer.return_(Token::Identifier(Identifier { value: lexer.match_() }))
     },
 
     // ------- NUMBERS -------
 
-    ['-' '+']? ($$ascii_digit+ ('.' $$ascii_digit*)?) | ('.' $$ascii_digit+) ('e' $$ascii_digit+)? => |lexer| {
-        let n = lexer.match_().parse::<f64>().expect("regex guarantees a valid f64");
-        lexer.return_(Token::Literal(Literal::Number(Number { value: n })))
+    ['-' '+']? (($$ascii_digit+ ('.' $$ascii_digit*)?) | ('.' $$ascii_digit+)) ('e' $$ascii_digit+)? => |lexer| {
+        let n = lexer.match_().parse::<Number>().expect("regex guarantees a valid f64");
+        lexer.return_(Token::Literal(Literal::Number(n)))
     },
 
     ['-' '+'] => |lexer| {
@@ -54,8 +56,7 @@ lexgen::lexer! {
 
     '#' $$ascii_hexdigit $$ascii_hexdigit $$ascii_hexdigit $$ascii_hexdigit $$ascii_hexdigit $$ascii_hexdigit => |lexer| {
         let n = u32::from_str_radix(&lexer.match_()[1..], 16).expect("regex guarantees a valid u32 (u24)");
-        let [b, g, r, _] = n.to_le_bytes();
-        lexer.return_(Token::Literal(Literal::Colour(Colour { r, g, b })))
+        lexer.return_(Token::Literal(Literal::Colour(n.try_into().expect("regex only allows for u24-sized u32"))))
     },
 
     // #rgb -> #rrggbb
@@ -69,7 +70,7 @@ lexgen::lexer! {
         let b = u8::from_str_radix(&match_[3..4], 16)
             .expect("regex guarantees a valid u8 (B-channel)");
 
-        lexer.return_(Token::Literal(Literal::Colour(Colour { r: r * 17, g: g * 17, b: b * 17 })))
+        lexer.return_(Token::Literal(Literal::Colour(Colour { r: r * 17, g: g * 17, b: b * 17, a: 0xff })))
     },
 
     '#' $$ascii_alphanumeric+ => |lexer| {
