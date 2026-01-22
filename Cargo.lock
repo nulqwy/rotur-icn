@@ -135,6 +135,7 @@ dependencies = [
  "gumdrop",
  "rotur-icn-pipeline",
  "rotur-icn-renderer",
+ "rotur-icn-units",
 ]
 
 [[package]]

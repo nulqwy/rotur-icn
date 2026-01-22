@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use gumdrop::Options;
 
+use rotur_icn_units::Number;
+
 #[derive(Debug, Clone, Options)]
 pub struct ViewerOptions {
     #[options(free, help = "path to the icon file to render")]
@@ -24,6 +26,19 @@ pub struct ViewerOptions {
         meta = "PXs"
     )]
     pub height: Option<usize>,
+
+    #[options(short = "x", help = "position of the camera", default = "0.")]
+    pub camera_x: Number,
+
+    #[options(short = "y", help = "position of the camera", default = "0.")]
+    pub camera_y: Number,
+
+    #[options(
+        short = "s",
+        help = "scales image for higher resolution",
+        default = "10."
+    )]
+    pub scale: Number,
 
     #[options(help = "print this message")]
     pub help: bool,

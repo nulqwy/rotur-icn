@@ -15,6 +15,7 @@ use error::FailureError;
 use options::ViewerOptions;
 use rotur_icn_pipeline::{Errors, process};
 use rotur_icn_renderer::cpu::Renderer;
+use rotur_icn_units::Vector;
 
 mod error;
 // mod gui;
@@ -71,11 +72,18 @@ fn main() {
     }
 
     let buf_size = (opts.width, opts.height.unwrap_or(opts.width));
-    let mut icon_buf = Renderer::new_buf(buf_size);
 
     let mut renderer = Renderer::default();
-    renderer.set_buf(&mut icon_buf, buf_size);
     renderer.icon = Some(&icon_lir);
+    renderer.scaling = opts.scale;
+    renderer.camera_pos = Vector {
+        x: opts.camera_x,
+        y: opts.camera_y,
+    };
+
+    let scaled_buf_size = renderer.scaled_buf_size(buf_size);
+    let mut icon_buf = renderer.new_buf(buf_size);
+    renderer.set_buf(&mut icon_buf, buf_size);
 
     let start_render = Instant::now();
     renderer.render();
@@ -89,7 +97,7 @@ fn main() {
         );
     }
 
-    save_buf(&opts.export, &icon_buf, buf_size);
+    save_buf(&opts.export, &icon_buf, scaled_buf_size);
 
     if !errors.is_empty() {
         std::process::exit(EXIT_CODE_FOUND_ERRORS)
