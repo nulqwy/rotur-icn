@@ -35,14 +35,6 @@ fn main() {
     let (icon_ast, icon_hir, icon_lir, errors) = process(&icn);
     let end_process = Instant::now();
 
-    if opts.perf_process {
-        let perf = end_process - start_process;
-        println!(
-            "Time taken to process the ICN: {:.3}υs",
-            perf.as_secs_f64() * 1e6
-        );
-    }
-
     if opts.ast {
         println!("--- AST ---\n{icon_ast}");
     }
@@ -63,6 +55,14 @@ fn main() {
             Colour::Red.paint("Found"),
             Style::new().bold().paint(errors.len().to_string()),
             Colour::Red.paint("errors"),
+        );
+    }
+
+    if opts.perf_process {
+        let perf = end_process - start_process;
+        println!(
+            "Time taken to process the ICN: {:.3}υs",
+            perf.as_secs_f64() * 1e6
         );
     }
 

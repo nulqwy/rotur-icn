@@ -12,6 +12,10 @@ impl Vector {
     pub fn length(self) -> Number {
         self.length_sq().sqrt()
     }
+
+    pub fn dot_product(self, other: Self) -> Number {
+        self.x * other.x + self.y * other.y
+    }
 }
 
 impl ops::Neg for Vector {

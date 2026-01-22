@@ -88,7 +88,7 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
                     colour,
                     kind: lir::ElementKind::Disk(lir::Disk {
                         centre,
-                        radius_sq: width*width / 4.,
+                        radius: width / 2.,
                     }),
                 }
             }

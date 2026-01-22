@@ -1,7 +1,10 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::{Colour, Number, Vector};
 
+mod circle;
 mod disk;
+mod line;
+mod rectangle;
 
 pub struct Renderer<'b, 'c> {
     buf: Option<&'b mut [u8]>,
@@ -80,10 +83,10 @@ impl<'b, 'c> Renderer<'b, 'c> {
 
     fn render_element(el: &lir::Element, pos: Vector) -> Option<InternalColour> {
         let intersects = match &el.kind {
-            lir::ElementKind::Line(line) => todo!(),
+            lir::ElementKind::Line(line) => line::test(line, pos),
             lir::ElementKind::Disk(disk) => disk::test(disk, pos),
-            lir::ElementKind::Circle(circle) => todo!(),
-            lir::ElementKind::Rectangle(rectangle) => todo!(),
+            lir::ElementKind::Circle(circle) => circle::test(circle, pos),
+            lir::ElementKind::Rectangle(rectangle) => rectangle::test(rectangle, pos),
             lir::ElementKind::Triangle(triangle) => todo!(),
             lir::ElementKind::Arc(arc) => todo!(),
             lir::ElementKind::Ellipse(ellipse) => todo!(),

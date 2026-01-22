@@ -43,7 +43,7 @@ impl fmt::Display for lir::Line {
 
 impl fmt::Display for lir::Disk {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "disk {} rr{}", self.centre, self.radius_sq)
+        write!(f, "disk {} r{}", self.centre, self.radius)
     }
 }
 

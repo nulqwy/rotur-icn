@@ -33,7 +33,7 @@ pub struct Line {
 #[derive(Debug, Clone)]
 pub struct Disk {
     pub centre: Vector,
-    pub radius_sq: Number,
+    pub radius: Number,
 }
 
 #[derive(Debug, Clone)]

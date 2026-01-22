@@ -1,4 +1,8 @@
-dot 0 0
-c #f13 dot -13 50
-c #70f dot -20 20
-w 30 c #fbb dot 70 70
+c #fff w
+10 line -30 0 40 40
+cont -80 -30
+cont 99 -40
+cont 0 70
+c #666 w 1 cutcircle 0 0 10 0 180
+c #0ff w 4 dot 0 0 c #f0f dot -30 0 dot 40 40
+c #ff0 w 6 dot 50 50 c #f00 dot 50 -50 c #0f0 dot -50 -50 c #00f dot -50 50
