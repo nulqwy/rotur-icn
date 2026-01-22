@@ -93,10 +93,7 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
                 }
             }
             hir::OperationKind::DrawRectangle(draw_rectangle) => {
-                let top_left = origin + Vector {
-                    x: draw_rectangle.centre.x - draw_rectangle.sizes.x / 2.,
-                    y: draw_rectangle.centre.y + draw_rectangle.sizes.y / 2.,
-                    };
+                let bottom_left = origin + draw_rectangle.centre - draw_rectangle.sizes / 2.;
 
                 if !draw_rectangle.filled {
                     let top_right = draw_rectangle.centre + draw_rectangle.sizes / 2.;
@@ -108,7 +105,7 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
                 lir::Element {
                     colour,
                     kind: lir::ElementKind::Rectangle(lir::Rectangle {
-                        top_left,
+                        bottom_left,
                         sizes: draw_rectangle.sizes,
                         filled: draw_rectangle.filled,
                         outline_width: width,

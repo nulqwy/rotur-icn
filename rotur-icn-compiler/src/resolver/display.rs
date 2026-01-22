@@ -58,7 +58,7 @@ impl fmt::Display for lir::Rectangle {
         write!(
             f,
             "rectangle {} s{} {} ow{}",
-            self.top_left,
+            self.bottom_left,
             self.sizes,
             if self.filled { "filled" } else { "hollow" },
             self.outline_width,

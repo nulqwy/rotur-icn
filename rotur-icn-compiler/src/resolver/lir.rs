@@ -45,7 +45,7 @@ pub struct Circle {
 
 #[derive(Debug, Clone)]
 pub struct Rectangle {
-    pub top_left: Vector,
+    pub bottom_left: Vector,
     pub sizes: Vector,
     pub filled: bool,
     pub outline_width: Number,
