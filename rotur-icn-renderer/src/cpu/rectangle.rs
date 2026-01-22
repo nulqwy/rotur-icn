@@ -58,13 +58,24 @@ pub fn distance_sq(el: &lir::Rectangle, pos: Vector) -> f32 {
             if el.filled {
                 0.
             } else {
-                // FIXME
-                0.
+                let middle = bottom_left + el.sizes / 2.;
+                let horizontal = if pos.x < middle.x {
+                    pos.x - bottom_left.x
+                } else {
+                    top_right.x - pos.x
+                };
+                let vertical = if pos.y < middle.y {
+                    pos.y - bottom_left.y
+                } else {
+                    top_right.y - pos.y
+                };
+                let d = horizontal.min(vertical);
+                d * d
             }
         }
     }
 }
 
 pub fn test(el: &lir::Rectangle, pos: Vector) -> bool {
-    distance_sq(el, pos) < el.outline_width
+    distance_sq(el, pos) < el.outline_width * el.outline_width
 }
