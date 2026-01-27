@@ -1,7 +1,6 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
-// TODO separate squared distance and not squared
 pub fn distance(el: &lir::Rectangle, pos: Vector) -> Distance {
     let bottom_left = el.bottom_left;
     let top_right = bottom_left + el.sizes;
