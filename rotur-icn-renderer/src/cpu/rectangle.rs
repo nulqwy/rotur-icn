@@ -2,7 +2,7 @@ use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
 // TODO separate squared distance and not squared
-pub fn distance_sq(el: &lir::Rectangle, pos: Vector) -> f32 {
+pub fn distance(el: &lir::Rectangle, pos: Vector) -> Distance {
     let bottom_left = el.bottom_left;
     let top_right = bottom_left + el.sizes;
 
@@ -14,68 +14,71 @@ pub fn distance_sq(el: &lir::Rectangle, pos: Vector) -> f32 {
 
     match (bl_below, bl_left, tr_above, tr_right) {
         // bottom left
-        (true, true, _, _) => (bottom_left - pos).length_sq(),
+        (true, true, _, _) => Distance::Squared((bottom_left - pos).length_sq()),
         // below
-        (true, false, _, false) => {
-            let d = bottom_left.y - pos.y;
-            d * d
-        }
+        (true, false, _, false) => Distance::Direct(bottom_left.y - pos.y),
         // bottom right
         (true, _, _, true) => {
             let bottom_right = Vector {
                 x: top_right.x,
                 y: bottom_left.y,
             };
-            (bottom_right - pos).length_sq()
+
+            Distance::Squared((bottom_right - pos).length_sq())
         }
         // to the right
-        (false, _, false, true) => {
-            let d = pos.x - top_right.x;
-            d * d
-        }
+        (false, _, false, true) => Distance::Direct(pos.x - top_right.x),
         // top right
-        (_, _, true, true) => (top_right - pos).length_sq(),
+        (_, _, true, true) => Distance::Squared((top_right - pos).length_sq()),
         // above
-        (_, false, true, false) => {
-            let d = pos.y - top_right.y;
-            d * d
-        }
+        (_, false, true, false) => Distance::Direct(pos.y - top_right.y),
         // top left
         (_, true, true, _) => {
             let top_left = Vector {
                 x: bottom_left.x,
                 y: top_right.y,
             };
-            (top_left - pos).length_sq()
+
+            Distance::Squared((top_left - pos).length_sq())
         }
         // to the left
-        (false, true, false, _) => {
-            let d = bottom_left.x - pos.x;
-            d * d
-        }
+        (false, true, false, _) => Distance::Direct(bottom_left.x - pos.x),
         // on the inside
         (false, false, false, false) => {
             if el.filled {
-                0.
+                Distance::Direct(0.)
             } else {
                 let middle = bottom_left + el.sizes / 2.;
+
+                // TODO technically by some (even) more comparisons, the min() could be resolved
+                // idk if it would have any meaningful difference tho, prob not
+
                 let horizontal = if pos.x < middle.x {
                     pos.x - bottom_left.x
                 } else {
                     top_right.x - pos.x
                 };
+
                 let vertical = if pos.y < middle.y {
                     pos.y - bottom_left.y
                 } else {
                     top_right.y - pos.y
                 };
-                let d = horizontal.min(vertical);
-                d * d
+
+                Distance::Direct(horizontal.min(vertical))
             }
         }
     }
 }
 
+pub enum Distance {
+    Direct(f32),
+    Squared(f32),
+}
+
 pub fn test(el: &lir::Rectangle, pos: Vector) -> bool {
-    distance_sq(el, pos) < el.outline_width * el.outline_width
+    match distance(el, pos) {
+        Distance::Direct(d) => d <= el.outline_width / 2.,
+        Distance::Squared(d) => d <= el.outline_width * el.outline_width / 4.,
+    }
 }
