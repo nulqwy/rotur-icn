@@ -24,5 +24,5 @@ pub fn distance_sq(el: &lir::Line, pos: Vector) -> f32 {
 }
 
 pub fn test(el: &lir::Line, pos: Vector) -> bool {
-    distance_sq(el, pos) < el.width * el.width
+    distance_sq(el, pos) <= el.width * el.width / 4.
 }

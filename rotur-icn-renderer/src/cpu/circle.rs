@@ -9,5 +9,5 @@ pub fn distance(el: &lir::Circle, pos: Vector) -> f32 {
 }
 
 pub fn test(el: &lir::Circle, pos: Vector) -> bool {
-    distance(el, pos) < el.width
+    distance(el, pos) <= el.width / 2.
 }

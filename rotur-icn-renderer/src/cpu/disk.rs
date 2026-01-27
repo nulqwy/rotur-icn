@@ -8,5 +8,5 @@ pub fn distance_sq(el: &lir::Disk, pos: Vector) -> f32 {
 }
 
 pub fn test(el: &lir::Disk, pos: Vector) -> bool {
-    distance_sq(el, pos) < el.radius * el.radius
+    distance_sq(el, pos) <= el.radius * el.radius
 }
