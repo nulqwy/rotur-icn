@@ -47,8 +47,9 @@ pub fn distance_sq(el: &lir::Triangle, pos: Vector) -> f32 {
         (true, true, true) => 0.,
         // opposite AB
         (false, true, true) => {
-            let a_closer = (ab * ap).is_sign_negative();
-            let b_closer = (ab * bp).is_sign_positive();
+            let abp_dot = ab * ap;
+            let a_closer = abp_dot.is_sign_negative();
+            let b_closer = abp_dot > ab.length_sq();
             match (a_closer, b_closer) {
                 (true, false) => ap.length_sq(),
                 (false, true) => bp.length_sq(),
@@ -60,8 +61,9 @@ pub fn distance_sq(el: &lir::Triangle, pos: Vector) -> f32 {
         (false, false, true) => bp.length_sq(),
         // opposite BC
         (true, false, true) => {
-            let b_closer = (bc * bp).is_sign_negative();
-            let c_closer = (bc * cp).is_sign_positive();
+            let bcp_dot = bc * bp;
+            let b_closer = bcp_dot.is_sign_negative();
+            let c_closer = bcp_dot > bc.length_sq();
             match (b_closer, c_closer) {
                 (true, false) => bp.length_sq(),
                 (false, true) => cp.length_sq(),
@@ -73,8 +75,9 @@ pub fn distance_sq(el: &lir::Triangle, pos: Vector) -> f32 {
         (true, false, false) => cp.length_sq(),
         // opposite CA
         (true, true, false) => {
-            let c_closer = (ca * cp).is_sign_negative();
-            let a_closer = (ca * ap).is_sign_positive();
+            let cap_dot = ca * cp;
+            let c_closer = cap_dot.is_sign_negative();
+            let a_closer = cap_dot > ca.length_sq();
             match (c_closer, a_closer) {
                 (true, false) => cp.length_sq(),
                 (false, true) => ap.length_sq(),
