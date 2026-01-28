@@ -3,7 +3,7 @@ use crate::Number;
 mod display;
 mod maths;
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Vector {
     pub x: Number,
     pub y: Number,

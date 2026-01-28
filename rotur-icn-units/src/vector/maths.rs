@@ -6,7 +6,7 @@ use super::Vector;
 
 impl Vector {
     pub fn length_sq(self) -> Number {
-        self.x * self.x + self.y * self.y
+        self.dot_product(self)
     }
 
     pub fn length(self) -> Number {
@@ -15,6 +15,20 @@ impl Vector {
 
     pub fn dot_product(self, other: Self) -> Number {
         self.x * other.x + self.y * other.y
+    }
+
+    pub fn rotate_90_cc(self) -> Self {
+        Self {
+            x: -self.y,
+            y: self.x,
+        }
+    }
+
+    pub fn rotate_90_cw(self) -> Self {
+        Self {
+            x: self.y,
+            y: -self.x,
+        }
     }
 }
 
