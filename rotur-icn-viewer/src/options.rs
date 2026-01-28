@@ -6,17 +6,17 @@ use rotur_icn_units::Number;
 
 #[derive(Debug, Clone, Options)]
 pub struct ViewerOptions {
-    #[options(free, help = "path to the icon file to render")]
+    #[options(free, help = "path to the ICN file to render")]
     pub icon: Option<PathBuf>,
 
-    #[options(no_short, help = "path to save the exported PPM to", meta = "PATH")]
+    #[options(no_short, help = "path to export a PPM to", meta = "PATH")]
     pub export: PathBuf,
 
     #[options(
         short = "W",
         help = "width of the canvas",
         meta = "PXs",
-        default = "512"
+        default = "20"
     )]
     pub width: usize,
 
@@ -27,14 +27,14 @@ pub struct ViewerOptions {
     )]
     pub height: Option<usize>,
 
-    #[options(short = "x", help = "position of the camera", default = "0.")]
+    #[options(short = "X", help = "position of the camera", default = "0")]
     pub camera_x: Number,
 
-    #[options(short = "y", help = "position of the camera", default = "0.")]
+    #[options(short = "Y", help = "position of the camera", default = "0")]
     pub camera_y: Number,
 
     #[options(
-        short = "s",
+        short = "S",
         help = "scales image for higher resolution",
         default = "10."
     )]
@@ -52,12 +52,12 @@ pub struct ViewerOptions {
     #[options(no_short, help = "print the time taken to render the ICN")]
     pub perf_render: bool,
 
-    #[options(no_short, help = "print AST representation of the ICN")]
+    #[options(no_short, help = "print the AST representation of the ICN")]
     pub ast: bool,
 
-    #[options(no_short, help = "print HIR representation of the ICN")]
+    #[options(no_short, help = "print the HIR representation of the ICN")]
     pub hir: bool,
 
-    #[options(no_short, help = "print LIR representation of the ICN")]
+    #[options(no_short, help = "print the LIR representation of the ICN")]
     pub lir: bool,
 }
