@@ -3,6 +3,7 @@ use std::f32;
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
+// TODO review the maths, if calculating via a 90deg-rotated vec would be any simpler
 pub fn distance_sq(el: &lir::Line, pos: Vector) -> f32 {
     let end_to_pos = pos - el.end;
     let end_to_start = el.start - el.end;
