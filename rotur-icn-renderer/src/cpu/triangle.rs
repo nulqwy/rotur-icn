@@ -2,6 +2,10 @@ use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
 pub fn distance_sq(el: &lir::Triangle, pos: Vector) -> f32 {
+    debug_assert!(
+        el.a != el.b && el.b != el.c && el.c != el.a,
+        "equal points (ABC) in the tri should be resolved to a disk"
+    );
     debug_assert_ne!(
         el.a, el.b,
         "equal points (AB) in the tri should be resolved to a line"

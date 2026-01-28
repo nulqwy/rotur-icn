@@ -4,6 +4,11 @@ use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
 pub fn distance_sq(el: &lir::Line, pos: Vector) -> f32 {
+    debug_assert_ne!(
+        el.start, el.end,
+        "equal points in the line should be resolved to a dot"
+    );
+
     let ab = el.end - el.start;
 
     let ap = pos - el.start;

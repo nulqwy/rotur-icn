@@ -39,11 +39,18 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
 
                 lir::Element {
                     colour,
-                    kind: lir::ElementKind::Line(lir::Line {
-                        start: origin + draw_line.start,
-                        end: origin + draw_line.end,
-                        width,
-                    }),
+                    kind: if draw_line.start == draw_line.end {
+                        lir::ElementKind::Disk(lir::Disk {
+                            centre: end,
+                            radius: width / 2.,
+                        })
+                    } else {
+                        lir::ElementKind::Line(lir::Line {
+                            start: origin + draw_line.start,
+                            end,
+                            width,
+                        })
+                    }
                 }
             }
             hir::OperationKind::ContinueLine(continue_line) => {
@@ -117,22 +124,27 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
 
                 lir::Element {
                     colour,
-                    kind: if draw_triangle.a == draw_triangle.b {
+                    kind: if draw_triangle.a == draw_triangle.b && draw_triangle.b == draw_triangle.c {
+                        lir::ElementKind::Disk(lir::Disk {
+                            centre: origin + draw_triangle.a,
+                            radius: width / 2.,
+                        })
+                    } else if draw_triangle.a == draw_triangle.b {
                         lir::ElementKind::Line(lir::Line {
-                            start: draw_triangle.a,
-                            end: draw_triangle.c,
+                            start: origin + draw_triangle.a,
+                            end: origin + draw_triangle.c,
                             width,
                         })
                     } else if draw_triangle.b == draw_triangle.c {
                         lir::ElementKind::Line(lir::Line {
-                            start: draw_triangle.b,
-                            end: draw_triangle.a,
+                            start: origin + draw_triangle.b,
+                            end: origin + draw_triangle.a,
                             width,
                         })
                     } else if draw_triangle.c == draw_triangle.a {
                         lir::ElementKind::Line(lir::Line {
-                            start: draw_triangle.c,
-                            end: draw_triangle.b,
+                            start: origin + draw_triangle.c,
+                            end: origin + draw_triangle.b,
                             width,
                         })
                     } else {

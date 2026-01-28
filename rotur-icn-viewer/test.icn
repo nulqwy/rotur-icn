@@ -9,5 +9,5 @@ line -9 -9 9 9
 line -9 9 9 -9
 
 c #FFFFFF
-line 0 9 0 -9
+line 0 9 0 9
 line 9 0 -9 0
