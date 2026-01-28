@@ -6,28 +6,17 @@ use super::Vector;
 
 impl Vector {
     pub fn length_sq(self) -> Number {
-        self.dot_product(self)
+        self * self
     }
 
     pub fn length(self) -> Number {
         self.length_sq().sqrt()
     }
 
-    pub fn dot_product(self, other: Self) -> Number {
-        self.x * other.x + self.y * other.y
-    }
-
-    pub fn rotate_90_cc(self) -> Self {
+    pub fn rotate_90(self) -> Self {
         Self {
             x: -self.y,
             y: self.x,
-        }
-    }
-
-    pub fn rotate_90_cw(self) -> Self {
-        Self {
-            x: self.y,
-            y: -self.x,
         }
     }
 }
@@ -80,38 +69,10 @@ impl ops::SubAssign for Vector {
 }
 
 impl ops::Mul for Vector {
-    type Output = Self;
+    type Output = Number;
 
     fn mul(self, rhs: Self) -> Self::Output {
-        Self {
-            x: self.x * rhs.x,
-            y: self.y * rhs.y,
-        }
-    }
-}
-
-impl ops::MulAssign for Vector {
-    fn mul_assign(&mut self, rhs: Self) {
-        self.x *= rhs.x;
-        self.y *= rhs.y;
-    }
-}
-
-impl ops::Div for Vector {
-    type Output = Self;
-
-    fn div(self, rhs: Self) -> Self::Output {
-        Self {
-            x: self.x / rhs.x,
-            y: self.y / rhs.y,
-        }
-    }
-}
-
-impl ops::DivAssign for Vector {
-    fn div_assign(&mut self, rhs: Self) {
-        self.x /= rhs.x;
-        self.y /= rhs.y;
+        self.x * rhs.x + self.y * rhs.y
     }
 }
 

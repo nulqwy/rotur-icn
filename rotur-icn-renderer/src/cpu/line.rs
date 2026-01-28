@@ -9,7 +9,7 @@ pub fn distance_sq(el: &lir::Line, pos: Vector) -> f32 {
     let ap = pos - el.start;
     let bp = pos - el.end;
 
-    let ab_dot = ab.dot_product(ap);
+    let ab_dot = ab * ap;
 
     let a_closer = ab_dot.is_sign_negative();
     let b_closer = ab_dot > ab.length_sq();
@@ -18,8 +18,8 @@ pub fn distance_sq(el: &lir::Line, pos: Vector) -> f32 {
         (true, false) => ap.length_sq(),
         (false, true) => bp.length_sq(),
         (false, false) => {
-            let ab_normal = ab.rotate_90_cc();
-            let ab_norm_dot = ab_normal.dot_product(ap);
+            let ab_normal = ab.rotate_90();
+            let ab_norm_dot = ab_normal * ap;
             ab_norm_dot * ab_norm_dot / ab_normal.length_sq()
         }
         (true, true) => unreachable!("point cannot be outside at both places"),
