@@ -3,25 +3,27 @@ use std::f32;
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
-// TODO review the maths, if calculating via a 90deg-rotated vec would be any simpler
 pub fn distance_sq(el: &lir::Line, pos: Vector) -> f32 {
-    let end_to_pos = pos - el.end;
-    let end_to_start = el.start - el.end;
+    let ab = el.end - el.start;
 
-    let core_product = end_to_start.dot_product(end_to_pos);
+    let ap = pos - el.start;
+    let bp = pos - el.end;
 
-    if core_product < 0. {
-        return end_to_pos.length_sq();
+    let ab_dot = ab.dot_product(ap);
+
+    let a_closer = ab_dot.is_sign_negative();
+    let b_closer = ab_dot > ab.length_sq();
+
+    match (a_closer, b_closer) {
+        (true, false) => ap.length_sq(),
+        (false, true) => bp.length_sq(),
+        (false, false) => {
+            let ab_normal = ab.rotate_90_cc();
+            let ab_norm_dot = ab_normal.dot_product(ap);
+            ab_norm_dot * ab_norm_dot / ab_normal.length_sq()
+        }
+        (true, true) => unreachable!("point cannot be outside at both places"),
     }
-
-    let end_to_start_len_sq = end_to_start.length_sq();
-
-    if core_product > end_to_start_len_sq {
-        let end_to_start = pos - el.start;
-        return end_to_start.length_sq();
-    }
-
-    -(core_product * core_product) / end_to_start_len_sq + end_to_pos.length_sq()
 }
 
 pub fn test(el: &lir::Line, pos: Vector) -> bool {
