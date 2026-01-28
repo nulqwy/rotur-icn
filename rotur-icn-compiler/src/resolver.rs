@@ -117,12 +117,32 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
 
                 lir::Element {
                     colour,
-                    kind: lir::ElementKind::Triangle(lir::Triangle {
-                        a: origin + draw_triangle.a,
-                        b: origin + draw_triangle.b,
-                        c: origin + draw_triangle.c,
-                        outline_width: width
-                    })
+                    kind: if draw_triangle.a == draw_triangle.b {
+                        lir::ElementKind::Line(lir::Line {
+                            start: draw_triangle.a,
+                            end: draw_triangle.c,
+                            width,
+                        })
+                    } else if draw_triangle.b == draw_triangle.c {
+                        lir::ElementKind::Line(lir::Line {
+                            start: draw_triangle.b,
+                            end: draw_triangle.a,
+                            width,
+                        })
+                    } else if draw_triangle.c == draw_triangle.a {
+                        lir::ElementKind::Line(lir::Line {
+                            start: draw_triangle.c,
+                            end: draw_triangle.b,
+                            width,
+                        })
+                    } else {
+                        lir::ElementKind::Triangle(lir::Triangle {
+                            a: origin + draw_triangle.a,
+                            b: origin + draw_triangle.b,
+                            c: origin + draw_triangle.c,
+                            outline_width: width
+                        })
+                    }
                 }
             },
             hir::OperationKind::MoveCentre(move_centre) => {

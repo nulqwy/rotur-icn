@@ -5,6 +5,7 @@ mod circle;
 mod disk;
 mod line;
 mod rectangle;
+mod triangle;
 
 pub struct Renderer<'b, 'c> {
     buf: Option<&'b mut [u8]>,
@@ -103,10 +104,22 @@ impl<'b, 'c> Renderer<'b, 'c> {
             lir::ElementKind::Disk(disk) => disk::test(disk, pos),
             lir::ElementKind::Circle(circle) => circle::test(circle, pos),
             lir::ElementKind::Rectangle(rectangle) => rectangle::test(rectangle, pos),
-            lir::ElementKind::Triangle(triangle) => todo!(),
-            lir::ElementKind::Arc(arc) => todo!(),
-            lir::ElementKind::Ellipse(ellipse) => todo!(),
-            lir::ElementKind::Curve(curve) => todo!(),
+            lir::ElementKind::Triangle(triangle) => triangle::test(triangle, pos),
+            lir::ElementKind::Arc(_arc) => {
+                // TODO
+                eprintln!("WARNING IGNORING ARC - NOT IMPLEMENTED");
+                false
+            }
+            lir::ElementKind::Ellipse(_ellipse) => {
+                // TODO
+                eprintln!("WARNING IGNORING ELLIPSE - NOT IMPLEMENTED");
+                false
+            }
+            lir::ElementKind::Curve(_curve) => {
+                // TODO
+                eprintln!("WARNING IGNORING CURVE - NOT IMPLEMENTED");
+                false
+            }
         };
 
         intersects.then_some(el.colour.into())
