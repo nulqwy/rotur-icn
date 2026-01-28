@@ -24,7 +24,7 @@ impl Default for Renderer<'_, '_> {
             camera_pos: Vector::ZERO,
             scaling: 1.,
             icon: None,
-            background_colour: Colour::BLACK,
+            background_colour: Colour::ZERO,
         }
     }
 }

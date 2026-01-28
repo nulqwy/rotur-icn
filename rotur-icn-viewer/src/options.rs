@@ -9,7 +9,7 @@ pub struct ViewerOptions {
     #[options(free, help = "path to the ICN file to render")]
     pub icon: Option<PathBuf>,
 
-    #[options(no_short, help = "path to export a PPM to", meta = "PATH")]
+    #[options(no_short, help = "path to export a PAM to", meta = "PATH")]
     pub export: PathBuf,
 
     #[options(

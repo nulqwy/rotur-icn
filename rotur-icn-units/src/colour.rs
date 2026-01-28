@@ -31,6 +31,13 @@ impl Default for Colour {
 }
 
 impl Colour {
+    pub const ZERO: Self = Self {
+        r: 0x00,
+        g: 0x00,
+        b: 0x00,
+        a: 0x00,
+    };
+
     pub const BLACK: Self = Self {
         r: 0x00,
         g: 0x00,

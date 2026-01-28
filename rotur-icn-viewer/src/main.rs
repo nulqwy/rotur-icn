@@ -127,16 +127,20 @@ fn save_buf(path: &Path, buf: &[u8], buf_size: (usize, usize)) {
 
     file.lock().unwrap();
 
-    let buf_no_alpha = buf
-        .iter()
-        .copied()
-        .enumerate()
-        .filter(|(i, _)| i % 4 != 3)
-        .map(|(_, b)| b)
-        .collect::<Vec<_>>();
+    write!(
+        file,
+        "P7\n\
+        WIDTH {}\n\
+        HEIGHT {}\n\
+        DEPTH 4\n\
+        MAXVAL 255\n\
+        TUPLTYPE RGB_ALPHA\n\
+        ENDHDR\n",
+        buf_size.0, buf_size.1
+    )
+    .unwrap();
 
-    writeln!(file, "P6 {} {} 255", buf_size.0, buf_size.1).unwrap();
-    file.write_all(&buf_no_alpha).unwrap();
+    file.write_all(buf).unwrap();
 }
 
 fn display_diagnostics(file: Option<&Path>, src: &str, errors: &Errors) {
