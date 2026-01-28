@@ -4,7 +4,8 @@ use super::ast::{Argument, Command, Icon};
 
 impl fmt::Display for Icon<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "Icon commands:")?;
+        writeln!(f, "Icon commands ({} total):", self.commands.len())?;
+
         if self.commands.is_empty() {
             writeln!(f, "<no commands>")?;
         } else {
@@ -12,6 +13,7 @@ impl fmt::Display for Icon<'_> {
                 writeln!(f, "- {command}")?;
             }
         }
+
         Ok(())
     }
 }

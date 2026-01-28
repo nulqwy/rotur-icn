@@ -4,10 +4,14 @@ use super::hir;
 
 impl fmt::Display for hir::IconHir {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "Icon instructions:")?;
+        writeln!(f, "Icon instructions ({} total):", self.operations.len())?;
 
-        for instr in &self.operations {
-            writeln!(f, "- {instr}")?;
+        if self.operations.is_empty() {
+            writeln!(f, "<no instructions>")?;
+        } else {
+            for instr in &self.operations {
+                writeln!(f, "- {instr}")?;
+            }
         }
 
         Ok(())

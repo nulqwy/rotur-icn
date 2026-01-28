@@ -4,10 +4,14 @@ use super::lir;
 
 impl fmt::Display for lir::IconLir {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "Icon elements:")?;
+        writeln!(f, "Icon elements ({} total):", self.elements.len())?;
 
-        for el in &self.elements {
-            writeln!(f, "- {el}")?;
+        if self.elements.is_empty() {
+            writeln!(f, "<no elements>")?;
+        } else {
+            for el in &self.elements {
+                writeln!(f, "- {el}")?;
+            }
         }
 
         Ok(())
