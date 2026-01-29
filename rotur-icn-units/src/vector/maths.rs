@@ -5,6 +5,17 @@ use crate::number::Number;
 use super::Vector;
 
 impl Vector {
+    pub fn new_from_length(length: Number, angle: Number) -> Self {
+        Self::new_normal(angle) * length
+    }
+
+    pub fn new_normal(angle: Number) -> Self {
+        Self {
+            x: angle.cos(),
+            y: angle.sin(),
+        }
+    }
+
     pub fn length_sq(self) -> Number {
         self * self
     }
@@ -13,10 +24,21 @@ impl Vector {
         self.length_sq().sqrt()
     }
 
-    pub fn rotate_90(self) -> Self {
+    pub fn angle(self) -> Number {
+        self.y.atan2(self.x)
+    }
+
+    pub fn rotate_90_cc(self) -> Self {
         Self {
             x: -self.y,
             y: self.x,
+        }
+    }
+
+    pub fn rotate_90_cw(self) -> Self {
+        Self {
+            x: self.y,
+            y: -self.x,
         }
     }
 }

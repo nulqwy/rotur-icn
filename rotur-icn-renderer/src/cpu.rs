@@ -1,6 +1,7 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::{Colour, Number, Vector};
 
+mod arc;
 mod circle;
 mod disk;
 mod line;
@@ -105,11 +106,7 @@ impl<'b, 'c> Renderer<'b, 'c> {
             lir::ElementKind::Circle(circle) => circle::test(circle, pos),
             lir::ElementKind::Rectangle(rectangle) => rectangle::test(rectangle, pos),
             lir::ElementKind::Triangle(triangle) => triangle::test(triangle, pos),
-            lir::ElementKind::Arc(_arc) => {
-                // TODO
-                eprintln!("WARNING IGNORING ARC - NOT IMPLEMENTED");
-                false
-            }
+            lir::ElementKind::Arc(arc) => arc::test(arc, pos),
             lir::ElementKind::Ellipse(_ellipse) => {
                 // TODO
                 eprintln!("WARNING IGNORING ELLIPSE - NOT IMPLEMENTED");

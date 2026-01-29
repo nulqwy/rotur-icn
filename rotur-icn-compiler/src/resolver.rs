@@ -169,15 +169,13 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
                 let direction = draw_arc.direction * std::f32::consts::PI / 18.;
                 let arm_angle = draw_arc.arm_angle * std::f32::consts::PI / 180.;
 
-                let end_angle = std::f32::consts::FRAC_2_PI - (direction - arm_angle);
-                let start_angle = std::f32::consts::FRAC_2_PI - (direction + arm_angle);
+                let end_angle = std::f32::consts::FRAC_PI_2 - (direction - arm_angle);
+                let start_angle = std::f32::consts::FRAC_PI_2 - (direction + arm_angle);
 
                 let centre = origin + draw_arc.centre;
 
-                last_point = Some(centre + Vector {
-                    x: draw_arc.radius * start_angle.cos(),
-                    y: draw_arc.radius * start_angle.sin(),
-                });
+                let start_point = centre + Vector::new_from_length(draw_arc.radius, start_angle);
+                last_point = Some(start_point);
 
                 if draw_arc.arm_angle == 180. {
                     lir::Element {
@@ -186,6 +184,14 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
                             centre,
                             radius: draw_arc.radius,
                             width,
+                        })
+                    }
+                } else if draw_arc.arm_angle == 0. {
+                    lir::Element {
+                        colour,
+                        kind: lir::ElementKind::Disk(lir::Disk {
+                            centre: start_point,
+                            radius: width / 2.,
                         })
                     }
                 } else {
@@ -203,14 +209,11 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
             },
             hir::OperationKind::DrawEllipse(draw_ellipse) => {
                 let height = draw_ellipse.width * draw_ellipse.ratio;
-                let direction = std::f32::consts::FRAC_2_PI - draw_ellipse.direction;
+                let direction = std::f32::consts::FRAC_PI_2 - draw_ellipse.direction;
 
                 let centre = origin + draw_ellipse.centre;
 
-                last_point = Some(centre + Vector {
-                    x: height * direction.cos(),
-                    y: height * direction.sin(),
-                });
+                last_point = Some(centre + Vector::new_from_length(height, direction));
 
                 lir::Element {
                     colour,

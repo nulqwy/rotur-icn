@@ -27,9 +27,9 @@ pub fn distance_sq(el: &lir::Triangle, pos: Vector) -> f32 {
     let bp = pos - el.b;
     let cp = pos - el.c;
 
-    let ab_normal = ab.rotate_90();
-    let bc_normal = bc.rotate_90();
-    let ca_normal = ca.rotate_90();
+    let ab_normal = ab.rotate_90_cc();
+    let bc_normal = bc.rotate_90_cc();
+    let ca_normal = ca.rotate_90_cc();
 
     // so that no matter the positions of ABC, inside is (true, true, true)
     let normalisation = (ca_normal * ab).is_sign_negative();

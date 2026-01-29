@@ -23,7 +23,7 @@ pub fn distance_sq(el: &lir::Line, pos: Vector) -> f32 {
         (true, false) => ap.length_sq(),
         (false, true) => bp.length_sq(),
         (false, false) => {
-            let ab_normal = ab.rotate_90();
+            let ab_normal = ab.rotate_90_cc();
             let ab_norm_dot = ab_normal * ap;
             ab_norm_dot * ab_norm_dot / ab_normal.length_sq()
         }
