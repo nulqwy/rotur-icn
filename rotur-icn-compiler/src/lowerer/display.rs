@@ -107,7 +107,7 @@ impl fmt::Display for hir::DrawArc {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "draw arc {} r{} dir {}deg arms {}deg",
+            "draw arc {} r{} dir {}*10deg arms {}deg",
             self.centre, self.radius, self.direction, self.arm_angle,
         )
     }
