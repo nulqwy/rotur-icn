@@ -10,10 +10,8 @@ impl Vector {
     }
 
     pub fn new_normal(angle: Number) -> Self {
-        Self {
-            x: angle.cos(),
-            y: angle.sin(),
-        }
+        let (y, x) = angle.sin_cos();
+        Self { x, y }
     }
 
     pub fn length_sq(self) -> Number {
@@ -59,11 +57,36 @@ impl Vector {
         self.x * other.y - self.y * other.x
     }
 
+    pub fn powi(self, power: i32) -> Self {
+        Self {
+            x: self.x.powi(power),
+            y: self.y.powi(power),
+        }
+    }
+
+    pub fn powf(self, power: Number) -> Self {
+        Self {
+            x: self.x.powf(power),
+            y: self.y.powf(power),
+        }
+    }
+
     pub fn clamp(self, min: Number, max: Number) -> Self {
         Self {
             x: self.x.clamp(min, max),
             y: self.y.clamp(min, max),
         }
+    }
+
+    pub fn abs(self) -> Self {
+        Self {
+            x: self.x.abs(),
+            y: self.y.abs(),
+        }
+    }
+
+    pub fn normalise(self) -> Self {
+        self / self.length()
     }
 }
 
@@ -114,6 +137,42 @@ impl ops::SubAssign for Vector {
     }
 }
 
+impl ops::Mul for Vector {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+        }
+    }
+}
+
+impl ops::MulAssign for Vector {
+    fn mul_assign(&mut self, rhs: Self) {
+        self.x *= rhs.x;
+        self.y *= rhs.y;
+    }
+}
+
+impl ops::Div for Vector {
+    type Output = Self;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x / rhs.x,
+            y: self.y / rhs.y,
+        }
+    }
+}
+
+impl ops::DivAssign for Vector {
+    fn div_assign(&mut self, rhs: Self) {
+        self.x /= rhs.x;
+        self.y /= rhs.y;
+    }
+}
+
 impl ops::Add<Number> for Vector {
     type Output = Self;
 
@@ -122,6 +181,14 @@ impl ops::Add<Number> for Vector {
             x: self.x + rhs,
             y: self.y + rhs,
         }
+    }
+}
+
+impl ops::Add<Vector> for Number {
+    type Output = Vector;
+
+    fn add(self, rhs: Vector) -> Self::Output {
+        rhs + self
     }
 }
 
@@ -139,6 +206,17 @@ impl ops::Sub<Number> for Vector {
         Self {
             x: self.x - rhs,
             y: self.y - rhs,
+        }
+    }
+}
+
+impl ops::Sub<Vector> for Number {
+    type Output = Vector;
+
+    fn sub(self, rhs: Vector) -> Self::Output {
+        Vector {
+            x: self - rhs.x,
+            y: self - rhs.y,
         }
     }
 }
@@ -161,6 +239,14 @@ impl ops::Mul<Number> for Vector {
     }
 }
 
+impl ops::Mul<Vector> for Number {
+    type Output = Vector;
+
+    fn mul(self, rhs: Vector) -> Self::Output {
+        rhs * self
+    }
+}
+
 impl ops::MulAssign<Number> for Vector {
     fn mul_assign(&mut self, rhs: Number) {
         self.x *= rhs;
@@ -175,6 +261,17 @@ impl ops::Div<Number> for Vector {
         Self {
             x: self.x / rhs,
             y: self.y / rhs,
+        }
+    }
+}
+
+impl ops::Div<Vector> for Number {
+    type Output = Vector;
+
+    fn div(self, rhs: Vector) -> Self::Output {
+        Vector {
+            x: self / rhs.x,
+            y: self / rhs.y,
         }
     }
 }
