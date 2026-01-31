@@ -3,7 +3,7 @@ use rotur_icn_units::Vector;
 
 use super::maths::cos_acos_3;
 
-// from https://www.shadertoy.com/view/MlKcDD
+// based on https://www.shadertoy.com/view/MlKcDD
 pub fn distance_sq(el: &lir::Curve, pos: Vector) -> f32 {
     let a = el.control - el.start;
     let b = el.start - el.control * 2. + el.end;
@@ -28,7 +28,7 @@ pub fn distance_sq(el: &lir::Curve, pos: Vector) -> f32 {
         let h = h.sqrt().copysign(nq);
 
         let x = h.midpoint(nq);
-        let v = x.abs().powf(1. / 3.).copysign(x);
+        let v = x.abs().cbrt().copysign(x);
         let mut t = v - p / v;
         let t2 = t.powi(2);
 
