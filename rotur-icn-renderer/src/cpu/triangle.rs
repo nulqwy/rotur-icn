@@ -42,50 +42,35 @@ pub fn distance_sq(el: &lir::Triangle, pos: Vector) -> f32 {
         // inside
         (true, true, true) => 0.,
         // opposite AB
-        (false, true, true) => {
-            let abp_dot = ab.dot(ap);
-            let a_closer = abp_dot.is_sign_negative();
-            let b_closer = abp_dot > ab.length_sq();
-            match (a_closer, b_closer) {
-                (true, false) => ap.length_sq(),
-                (false, true) => bp.length_sq(),
-                (false, false) => ab_cro.powi(2) / ab.length_sq(),
-                (true, true) => unreachable!("point cannot be outside at both places"),
-            }
-        }
+        (false, true, true) => line_dist(ab, ab_cro, ap, bp),
         // opposite B
         (false, false, true) => bp.length_sq(),
         // opposite BC
-        (true, false, true) => {
-            let bcp_dot = bc.dot(bp);
-            let b_closer = bcp_dot.is_sign_negative();
-            let c_closer = bcp_dot > bc.length_sq();
-            match (b_closer, c_closer) {
-                (true, false) => bp.length_sq(),
-                (false, true) => cp.length_sq(),
-                (false, false) => bc_cro.powi(2) / bc.length_sq(),
-                (true, true) => unreachable!("point cannot be outside at both places"),
-            }
-        }
+        (true, false, true) => line_dist(bc, bc_cro, bp, cp),
         // opposite C
         (true, false, false) => cp.length_sq(),
         // opposite CA
-        (true, true, false) => {
-            let cap_dot = ca.dot(cp);
-            let c_closer = cap_dot.is_sign_negative();
-            let a_closer = cap_dot > ca.length_sq();
-            match (c_closer, a_closer) {
-                (true, false) => cp.length_sq(),
-                (false, true) => ap.length_sq(),
-                (false, false) => ca_cro.powi(2) / ca.length_sq(),
-                (true, true) => unreachable!("point cannot be outside at both places"),
-            }
-        }
+        (true, true, false) => line_dist(ca, ca_cro, cp, ap),
         // opposite A
         (false, true, false) => ap.length_sq(),
         (false, false, false) => {
             unreachable!("the point cannot be on the outside of every triangle's side")
         }
+    }
+}
+
+#[inline]
+fn line_dist(side: Vector, side_cro: f32, start_pos: Vector, end_pos: Vector) -> f32 {
+    let side_dot = side.dot(start_pos);
+
+    let start_closer = side_dot.is_sign_negative();
+    let end_closer = side_dot > side.length_sq();
+
+    match (start_closer, end_closer) {
+        (true, false) => start_pos.length_sq(),
+        (false, true) => end_pos.length_sq(),
+        (false, false) => side_cro.powi(2) / side.length_sq(),
+        (true, true) => unreachable!("point cannot be outside at both places"),
     }
 }
 
