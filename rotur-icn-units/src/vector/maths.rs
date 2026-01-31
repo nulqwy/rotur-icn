@@ -41,6 +41,15 @@ impl Vector {
             y: -self.x,
         }
     }
+
+    pub fn rotate(self, angle: Number) -> Self {
+        let (sin, cos) = angle.sin_cos();
+
+        Self {
+            x: self.x * cos - self.y * sin,
+            y: self.x * sin + self.y * cos,
+        }
+    }
 }
 
 impl ops::Neg for Vector {

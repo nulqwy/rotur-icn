@@ -1,6 +1,2 @@
-w .5 c #666
-line -10 0 10 0
-line 0 10 0 -10
-cutcircle 0 0 8 0 180
-w 1 c #fff
-cutcircle 0 0 8 4.5 0
+w 5 c #fff
+ellipse 0 0 10 .5 10
