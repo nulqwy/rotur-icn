@@ -17,7 +17,7 @@ impl Vector {
     }
 
     pub fn length_sq(self) -> Number {
-        self * self
+        self.dot(self)
     }
 
     pub fn length(self) -> Number {
@@ -49,6 +49,14 @@ impl Vector {
             x: self.x * cos - self.y * sin,
             y: self.x * sin + self.y * cos,
         }
+    }
+
+    pub fn dot(self, other: Self) -> Number {
+        self.x * other.x + self.y * other.y
+    }
+
+    pub fn cross(self, other: Self) -> Number {
+        self.x * other.y - self.y * other.x
     }
 }
 
@@ -96,14 +104,6 @@ impl ops::SubAssign for Vector {
     fn sub_assign(&mut self, rhs: Self) {
         self.x += rhs.x;
         self.y += rhs.y;
-    }
-}
-
-impl ops::Mul for Vector {
-    type Output = Number;
-
-    fn mul(self, rhs: Self) -> Self::Output {
-        self.x * rhs.x + self.y * rhs.y
     }
 }
 

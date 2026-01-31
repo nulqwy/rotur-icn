@@ -3,6 +3,7 @@ use rotur_icn_units::{Colour, Number, Vector};
 
 mod arc;
 mod circle;
+mod curve;
 mod disk;
 mod ellipse;
 mod line;
