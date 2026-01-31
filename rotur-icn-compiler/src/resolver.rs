@@ -63,11 +63,18 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
 
                         last_point = Some(end);
 
-                        lir::ElementKind::Line(lir::Line {
-                            start: origin + start,
-                            end,
-                            width,
-                        })
+                        if start == continue_line.next {
+                            lir::ElementKind::Disk(lir::Disk {
+                                centre: end,
+                                radius: width / 2.,
+                            })
+                        } else {
+                            lir::ElementKind::Line(lir::Line {
+                                start: origin + start,
+                                end,
+                                width,
+                            })
+                        }
                     } else {
                         if !dangling_contlines_chained {
                             errors.push(Error {
