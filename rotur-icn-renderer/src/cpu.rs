@@ -7,6 +7,7 @@ mod curve;
 mod disk;
 mod ellipse;
 mod line;
+mod maths;
 mod rectangle;
 mod triangle;
 
@@ -110,11 +111,7 @@ impl<'b, 'c> Renderer<'b, 'c> {
             lir::ElementKind::Triangle(triangle) => triangle::test(triangle, pos),
             lir::ElementKind::Arc(arc) => arc::test(arc, pos),
             lir::ElementKind::Ellipse(ellipse) => ellipse::test(ellipse, pos),
-            lir::ElementKind::Curve(_curve) => {
-                // TODO
-                eprintln!("WARNING IGNORING CURVE - NOT IMPLEMENTED");
-                false
-            }
+            lir::ElementKind::Curve(curve) => curve::test(curve, pos),
         };
 
         intersects.then_some(el.colour.into())

@@ -58,6 +58,13 @@ impl Vector {
     pub fn cross(self, other: Self) -> Number {
         self.x * other.y - self.y * other.x
     }
+
+    pub fn clamp(self, min: Number, max: Number) -> Self {
+        Self {
+            x: self.x.clamp(min, max),
+            y: self.y.clamp(min, max),
+        }
+    }
 }
 
 impl ops::Neg for Vector {
