@@ -1,6 +1,15 @@
 [workspace]
 resolver = "3"
-members = ["rotur-icn-compiler", "rotur-icn-pipeline", "rotur-icn-renderer", "rotur-icn-syntax", "rotur-icn-units", "rotur-icn-viewer"]
+members = [
+  "rotur-icn-units", "rotur-icn-syntax", "rotur-icn-compiler",
+  "rotur-icn-pipeline", "rotur-icn-renderer", "rotur-icn-viewer"
+]
+
+[workspace.package]
+edition = "2024"
+repository = "https://github.com/nulqwy/rotur-icn"
+license = "Apache-2.0"
+
 
 [profile.release]
 lto = "thin"

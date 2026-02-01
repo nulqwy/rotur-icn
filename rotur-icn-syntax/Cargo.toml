@@ -1,7 +1,11 @@
 [package]
 name = "rotur-icn-syntax"
 version = "0.1.0"
-edition = "2024"
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+description = "the lexing & parsing machinery for rotur ICN"
+readme = "readme.md"
 
 [dependencies]
 arrayvec = "0.7.6"

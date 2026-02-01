@@ -1,7 +1,11 @@
 [package]
 name = "rotur-icn-viewer"
 version = "0.1.0"
-edition = "2024"
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+description = "a fast rotur ICN viewer & exporter"
+readme = "../readme.md"
 
 [dependencies]
 ansi_term = "0.12.1"

@@ -1,7 +1,11 @@
 [package]
 name = "rotur-icn-compiler"
 version = "0.1.0"
-edition = "2024"
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+description = "a compiler to HIR/LIR for rotur ICN"
+readme = "readme.md"
 
 [dependencies]
 rotur-icn-syntax = { version = "0.1.0", path = "../rotur-icn-syntax" }
