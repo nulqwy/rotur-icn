@@ -15,6 +15,6 @@ $ icn-viewer export myicon.icn | magick - myicon.png
 
 ## features
 
-- supports full ICN spec with full parity with orginal implementation
+- supports full ICN spec
 - invalid ICN detection and recovery
 - canvas fitting, scaling, padding, panning
