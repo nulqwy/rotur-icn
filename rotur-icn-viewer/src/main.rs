@@ -1,7 +1,5 @@
 use gumdrop::Options as _;
 
-use rotur_icn_units::Vector;
-
 use options::ViewerOptions;
 
 use crate::{export::export, options::ViewerMode};
@@ -16,24 +14,6 @@ fn main() {
 
     match opts.mode() {
         ViewerMode::Gui(_) => todo!("GUI will not be ready soon"),
-        ViewerMode::Export(opts) => {
-            let height = opts.height();
-            export(
-                opts.icon.as_deref(),
-                opts.save.as_deref(),
-                opts.error_abort,
-                Vector {
-                    x: opts.width,
-                    y: height,
-                },
-                opts.scale,
-                Vector {
-                    x: opts.camera_x,
-                    y: opts.camera_y,
-                },
-                (opts.perf_process, opts.perf_render),
-                (opts.ast, opts.hir, opts.lir),
-            );
-        }
+        ViewerMode::Export(opts) => export(opts),
     }
 }

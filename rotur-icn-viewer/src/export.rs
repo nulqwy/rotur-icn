@@ -11,7 +11,7 @@ use codespan_reporting::{
 };
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_pipeline::Errors;
-use rotur_icn_renderer::cpu::Renderer;
+use rotur_icn_renderer::{cpu::Renderer, fitter};
 use rotur_icn_units::{Colour, Vector};
 
 use crate::{
@@ -21,32 +21,57 @@ use crate::{
         EXIT_CODE_FAILED_READ_FILE, EXIT_CODE_FAILED_WRITE_FILE, EXIT_CODE_FOUND_ERRORS,
         FailureError,
     },
+    options::ExportOptions,
 };
 
-#[allow(clippy::too_many_arguments)]
 pub fn export(
-    src_path: Option<&Path>,
-    save_path: Option<&Path>,
-    abort_on_error: bool,
-    canvas: Vector,
-    scale: f32,
-    camera: Vector,
-    print_perf: (bool, bool),
-    print_debug: (bool, bool, bool),
+    ExportOptions {
+        help: _,
+        icon: icon_path,
+        save: save_path,
+        fit,
+        pad,
+        width,
+        height,
+        camera_x,
+        camera_y,
+        scale,
+        background,
+        error_abort,
+        perf_process,
+        perf_render,
+        ast,
+        hir,
+        lir,
+        chosen_sizes,
+    }: ExportOptions,
 ) {
-    let icon_src = read(src_path);
-    let (icon, errors) = process(&icon_src, print_perf.0, print_debug);
+    let icon_src = read(icon_path.as_deref());
+    let (icon, errors) = process(&icon_src, perf_process, (ast, hir, lir));
 
     if !errors.is_empty() {
-        display_diagnostics(src_path, &icon_src, &errors);
+        display_diagnostics(icon_path.as_deref(), &icon_src, &errors);
     }
 
-    if !errors.is_empty() && abort_on_error {
+    if !errors.is_empty() && error_abort {
         std::process::exit(EXIT_CODE_FOUND_ERRORS);
     }
 
-    let (image, image_size) = render(&icon, canvas, scale, camera, print_perf.1);
-    save(save_path, &image, image_size);
+    let (canvas, camera) = choose_canvas_camera(
+        &icon,
+        fit,
+        pad,
+        width.map(|w| Vector {
+            x: w,
+            y: height.unwrap_or(w),
+        }),
+        camera_x,
+        camera_y,
+        chosen_sizes,
+    );
+
+    let (image, image_size) = render(&icon, canvas, scale, camera, background, perf_render);
+    save(save_path.as_deref(), &image, image_size);
 
     if !errors.is_empty() {
         std::process::exit(EXIT_CODE_FOUND_ERRORS)
@@ -83,14 +108,66 @@ fn process(src: &str, print_perf: bool, print_debug: (bool, bool, bool)) -> (lir
     (icon_lir, errors)
 }
 
+/// Choose canvas and camera settings based on other settings.
+///
+/// ## Canvas
+///
+/// If fit is set, but no explicit is given, then fit is chosen.
+/// Same if only explicit is given.
+/// If both are set, then fit sets minimum canvas size.
+/// If no present, then default 20×20 is given.
+///
+/// ## Camera
+///
+/// Either default (0; 0) or fitted is chosen first.
+/// Then it's overwritten by-axis.
+fn choose_canvas_camera(
+    icon: &lir::IconLir,
+    fit: bool,
+    pad: f32,
+    canvas: Option<Vector>,
+    camera_x: Option<f32>,
+    camera_y: Option<f32>,
+    print: bool,
+) -> (Vector, Vector) {
+    let (canvas_f, camera_f) = fit
+        .then(|| fitter::fit(icon))
+        .map(|(v, c)| (Some(v), Some(c)))
+        .unwrap_or((None, None));
+
+    let final_canvas = match (canvas_f, canvas) {
+        (Some(fit), Some(set)) => fit.max(set),
+        (Some(fit), None) => fit,
+        (None, Some(set)) => set,
+        (None, None) => Vector::new(20.),
+    } + pad * 2.;
+
+    let mut final_camera = camera_f.unwrap_or(Vector::ZERO);
+
+    if let Some(x) = camera_x {
+        final_camera.x = x;
+    }
+
+    if let Some(y) = camera_y {
+        final_camera.y = y;
+    }
+
+    if print {
+        eprintln!("Chosen canvas & camera: {final_canvas} {final_camera}");
+    }
+
+    (final_canvas, final_camera)
+}
+
 fn render(
     icon: &lir::IconLir,
     canvas: Vector,
     scale: f32,
     camera: Vector,
+    background: Colour,
     print_perf: bool,
 ) -> (Vec<u8>, (usize, usize)) {
-    let mut renderer = Renderer::new(canvas, scale, camera, Colour::ZERO);
+    let mut renderer = Renderer::new(canvas, scale, camera, background);
     renderer.load(icon);
 
     let (mut buf, buf_size) = renderer.new_buf();

@@ -5,6 +5,10 @@ use crate::number::Number;
 use super::Vector;
 
 impl Vector {
+    pub fn new(v: Number) -> Self {
+        Self { x: v, y: v }
+    }
+
     pub fn new_from_length(length: Number, angle: Number) -> Self {
         Self::new_normal(angle) * length
     }
@@ -87,6 +91,28 @@ impl Vector {
 
     pub fn normalise(self) -> Self {
         self / self.length()
+    }
+
+    pub fn min(self, other: Self) -> Self {
+        Self {
+            x: self.x.min(other.x),
+            y: self.y.min(other.y),
+        }
+    }
+
+    pub fn max(self, other: Self) -> Self {
+        Self {
+            x: self.x.max(other.x),
+            y: self.y.max(other.y),
+        }
+    }
+
+    // for conjugate
+    pub fn conj_add(self, other: Self) -> Self {
+        Self {
+            x: self.x + other.x,
+            y: self.y - other.y,
+        }
     }
 }
 

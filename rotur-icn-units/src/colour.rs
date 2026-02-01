@@ -51,6 +51,16 @@ impl Colour {
         b: 0xff,
         a: 0xff,
     };
+
+    pub fn from_u32_with_alpha(value: u32) -> Self {
+        #[cfg(target_endian = "little")]
+        let [a, b, g, r] = value.to_le_bytes();
+
+        #[cfg(target_endian = "big")]
+        let [r, g, b, a] = value.to_be_bytes();
+
+        Self { r, g, b, a }
+    }
 }
 
 impl TryFrom<u32> for Colour {

@@ -1,8 +1,8 @@
-use std::path::PathBuf;
+use std::{num::ParseIntError, path::PathBuf};
 
 use gumdrop::Options;
 
-use rotur_icn_units::Number;
+use rotur_icn_units::{Colour, Number};
 
 #[derive(Debug, Clone, Options)]
 pub struct ViewerOptions {
@@ -46,36 +46,35 @@ pub struct ExportOptions {
     )]
     pub save: Option<PathBuf>,
 
-    #[options(
-        short = "W",
-        help = "width of the canvas",
-        meta = "PXs",
-        default = "20"
-    )]
-    pub width: f32,
+    #[options(short = "F", help = "fit canvas & camera to icon's edges")]
+    pub fit: bool,
+
+    #[options(short = "P", help = "padding around canvas' edges", default = "0")]
+    pub pad: f32,
+
+    #[options(short = "W", help = "width of the canvas (default: 20)", meta = "PXs")]
+    pub width: Option<f32>,
 
     #[options(
         short = "H",
         help = "height of the canvas (default: same as width)",
         meta = "PXs"
     )]
-    height: Option<f32>,
+    pub height: Option<f32>,
 
     #[options(
         short = "X",
-        help = "position of the camera",
-        meta = "PXs",
-        default = "0"
+        help = "position of the camera (default: 0)",
+        meta = "PXs"
     )]
-    pub camera_x: Number,
+    pub camera_x: Option<Number>,
 
     #[options(
         short = "Y",
-        help = "position of the camera",
-        meta = "PXs",
-        default = "0"
+        help = "position of the camera (default: 0)",
+        meta = "PXs"
     )]
-    pub camera_y: Number,
+    pub camera_y: Option<Number>,
 
     #[options(
         short = "S",
@@ -83,6 +82,15 @@ pub struct ExportOptions {
         default = "10"
     )]
     pub scale: Number,
+
+    #[options(
+        short = "C",
+        help = "set the background colour (8-char HEX, RGBA)",
+        meta = "COL",
+        parse(try_from_str = "parse_colour"),
+        default = "00000000"
+    )]
+    pub background: Colour,
 
     #[options(no_short, help = "abort, if any errors in the ICN were found")]
     pub error_abort: bool,
@@ -101,12 +109,13 @@ pub struct ExportOptions {
 
     #[options(no_short, help = "print the LIR representation of the ICN")]
     pub lir: bool,
+
+    #[options(no_short, help = "print the final chosen canvas & camera")]
+    pub chosen_sizes: bool,
 }
 
-impl ExportOptions {
-    pub fn height(&self) -> f32 {
-        self.height.unwrap_or(self.width)
-    }
+fn parse_colour(s: &str) -> Result<Colour, ParseIntError> {
+    Ok(Colour::from_u32_with_alpha(u32::from_str_radix(s, 16)?))
 }
 
 #[derive(Debug, Clone, Default, Options)]
