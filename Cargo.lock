@@ -133,6 +133,7 @@ dependencies = [
  "ansi_term",
  "codespan-reporting",
  "gumdrop",
+ "rotur-icn-compiler",
  "rotur-icn-pipeline",
  "rotur-icn-renderer",
  "rotur-icn-units",

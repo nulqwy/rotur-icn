@@ -11,69 +11,76 @@ mod maths;
 mod rectangle;
 mod triangle;
 
-pub struct Renderer<'b, 'c> {
-    buf: Option<&'b mut [u8]>,
-    buf_size: (usize, usize),
-    pub icon: Option<&'c lir::IconLir>,
+pub struct Renderer<'i> {
+    icon: Option<&'i lir::IconLir>,
     pub background_colour: Colour,
-    pub camera_pos: Vector,
+    pub canvas: Vector,
     pub scaling: Number,
+    pub camera_pos: Vector,
 }
 
-impl Default for Renderer<'_, '_> {
+impl Default for Renderer<'_> {
     fn default() -> Self {
         Self {
-            buf: None,
-            buf_size: (0, 0),
-            camera_pos: Vector::ZERO,
-            scaling: 1.,
             icon: None,
             background_colour: Colour::ZERO,
+            canvas: Vector { x: 20., y: 20. },
+            scaling: 1.,
+            camera_pos: Vector::ZERO,
         }
     }
 }
 
-impl<'b, 'c> Renderer<'b, 'c> {
-    pub fn new() -> Self {
-        Default::default()
+impl<'i> Renderer<'i> {
+    pub fn new(
+        canvas: Vector,
+        scaling: Number,
+        camera_pos: Vector,
+        background_colour: Colour,
+    ) -> Self {
+        Self {
+            canvas,
+            scaling,
+            camera_pos,
+            background_colour,
+            icon: None,
+        }
     }
 
-    pub fn scaled_buf_size(&self, buf_size: (usize, usize)) -> (usize, usize) {
+    pub fn load(&mut self, icon: &'i lir::IconLir) {
+        self.icon = Some(icon);
+    }
+
+    pub fn new_buf(&self) -> (Vec<u8>, (usize, usize)) {
         (
-            (buf_size.0 as Number * self.scaling).round() as usize,
-            (buf_size.1 as Number * self.scaling).round() as usize,
+            vec![0; self.scaled_buf_size_linear()],
+            self.scaled_buf_size(),
         )
     }
 
-    pub fn scaled_buf_size_linear(&self, buf_size: (usize, usize)) -> usize {
-        let scaled = self.scaled_buf_size(buf_size);
+    pub fn scaled_buf_size(&self) -> (usize, usize) {
+        let scaled = self.canvas * self.scaling;
+        (scaled.x.round() as usize, scaled.y.round() as usize)
+    }
+
+    pub fn scaled_buf_size_linear(&self) -> usize {
+        let scaled = self.scaled_buf_size();
         scaled.0 * scaled.1 * 4
     }
 
-    pub fn new_buf(&self, buf_size: (usize, usize)) -> Vec<u8> {
-        vec![0; self.scaled_buf_size_linear(buf_size)]
-    }
-
-    pub fn set_buf(&mut self, buf: &'b mut [u8], buf_size: (usize, usize)) {
+    pub fn render(&mut self, buf: &mut [u8]) {
         assert_eq!(
             buf.len(),
-            self.scaled_buf_size_linear(buf_size),
-            "buffer length must be for u32-sized pixels"
+            self.scaled_buf_size_linear(),
+            "buffer must be of correct size"
         );
 
-        self.buf = Some(buf);
-        self.buf_size = buf_size;
-    }
-
-    pub fn render(&mut self) {
-        // FIXME cache this one
-        let scaled_buf_size = self.scaled_buf_size(self.buf_size);
-        let buf = self
-            .buf
-            .as_mut()
-            .expect("buffer should have been set by this point");
-        let icon = self.icon.expect("icon should have been set by this point");
+        let icon = self
+            .icon
+            .expect("icon should have been loaded by this point");
         let bg_colour = self.background_colour.into();
+
+        let scaled_buf_size = self.scaled_buf_size();
 
         let rel_x_offset = (scaled_buf_size.0 / 2) as Number;
         let rel_y_offset = (scaled_buf_size.1 / 2) as Number;
