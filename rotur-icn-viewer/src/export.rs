@@ -120,7 +120,7 @@ fn process(src: &str, print_perf: bool, print_debug: (bool, bool, bool)) -> (lir
 /// ## Camera
 ///
 /// Either default (0; 0) or fitted is chosen first.
-/// Then it's overwritten by-axis.
+/// Then it's offset by-axis.
 fn choose_canvas_camera(
     icon: &lir::IconLir,
     fit: bool,
@@ -145,11 +145,11 @@ fn choose_canvas_camera(
     let mut final_camera = camera_f.unwrap_or(Vector::ZERO);
 
     if let Some(x) = camera_x {
-        final_camera.x = x;
+        final_camera.x += x;
     }
 
     if let Some(y) = camera_y {
-        final_camera.y = y;
+        final_camera.y += y;
     }
 
     if print {
