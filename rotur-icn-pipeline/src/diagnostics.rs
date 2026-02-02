@@ -166,7 +166,7 @@ impl From<ResolverErrorDiagnostic<'_>> for Diagnostic<()> {
     }
 }
 
-struct LexerPosRange<'p>(&'p rotur_icn_syntax::lexer::Pos);
+struct LexerPosRange<'p>(&'p rotur_icn_syntax::lexer::token::Pos);
 
 impl From<LexerPosRange<'_>> for Range<usize> {
     fn from(LexerPosRange((start, end)): LexerPosRange) -> Self {
@@ -174,7 +174,7 @@ impl From<LexerPosRange<'_>> for Range<usize> {
     }
 }
 
-struct LexerLocRange<'l>(&'l rotur_icn_syntax::lexer::Loc);
+struct LexerLocRange<'l>(&'l rotur_icn_syntax::lexer::token::Loc);
 
 impl From<LexerLocRange<'_>> for Range<usize> {
     fn from(LexerLocRange(loc): LexerLocRange) -> Self {

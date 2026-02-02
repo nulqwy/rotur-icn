@@ -7,22 +7,22 @@ mod error;
 
 pub use error::Error;
 
-use crate::lexer;
+use crate::lexer::token;
 
-pub fn parse<'s>(tokens: impl Iterator<Item = lexer::PToken<'s>>) -> (Icon<'s>, Vec<Error>) {
+pub fn parse<'s>(tokens: impl Iterator<Item = token::PToken<'s>>) -> (Icon<'s>, Vec<Error>) {
     let mut errors = Vec::new();
 
     let mut commands = Vec::new();
 
-    let mut command: Option<(&'s str, lexer::Pos)> = None;
+    let mut command: Option<(&'s str, token::Pos)> = None;
     let mut arguments = ArrayVec::new();
     let mut is_capturing_error = false;
     let mut is_capturing_overflow = false;
     let mut err_l_loc = None;
-    let mut prev_r_loc = lexer::Loc::default();
+    let mut prev_r_loc = token::Loc::default();
     for (l, token, r) in tokens {
         match token {
-            lexer::Token::Identifier(ident) => {
+            token::Token::Identifier(ident) => {
                 if let Some(err_l_loc) = err_l_loc.take() {
                     if is_capturing_overflow {
                         errors.push(Error::TooManyArguments {
@@ -51,7 +51,7 @@ pub fn parse<'s>(tokens: impl Iterator<Item = lexer::PToken<'s>>) -> (Icon<'s>, 
 
                 command = Some((ident.value, (l, r)));
             }
-            lexer::Token::Literal(lit) => {
+            token::Token::Literal(lit) => {
                 if command.is_none() && !is_capturing_error {
                     assert!(
                         err_l_loc.is_none(),

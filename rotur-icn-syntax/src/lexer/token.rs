@@ -1,5 +1,9 @@
 use rotur_icn_units::{Colour, Number};
 
+pub type Loc = lexgen_util::Loc;
+pub type Pos = (Loc, Loc);
+pub type PToken<'s> = (Loc, Token<'s>, Loc);
+
 #[derive(Debug, Clone)]
 pub enum Token<'s> {
     Identifier(Identifier<'s>),

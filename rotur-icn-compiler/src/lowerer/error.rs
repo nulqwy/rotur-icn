@@ -1,11 +1,11 @@
 use std::fmt;
 
-use rotur_icn_syntax::lexer::{self, display::PosDisplay};
+use rotur_icn_syntax::lexer::{display::PosDisplay, token};
 use rotur_icn_units::Number;
 
 #[derive(Debug, Clone)]
 pub struct Error {
-    pub cmd_pos: lexer::Pos,
+    pub cmd_pos: token::Pos,
     pub cmd_index: usize,
     pub kind: ErrorKind,
 }
@@ -13,27 +13,27 @@ pub struct Error {
 #[derive(Debug, Clone)]
 pub enum ErrorKind {
     TooManyArguments {
-        overflow_pos: lexer::Pos,
+        overflow_pos: token::Pos,
         exp: usize,
         got: usize,
     },
     TooFewArguments {
-        args_end_loc: lexer::Loc,
+        args_end_loc: token::Loc,
         exp: usize,
         got: usize,
     },
     UnexpectedLiteralKind {
-        arg_pos: lexer::Pos,
+        arg_pos: token::Pos,
         arg_index: usize,
-        exp: lexer::LiteralKind,
-        got: lexer::LiteralKind,
+        exp: token::LiteralKind,
+        got: token::LiteralKind,
     },
     InvalidNumericColour {
-        arg_pos: lexer::Pos,
+        arg_pos: token::Pos,
         arg_index: usize,
     },
     ArgOutOfRange {
-        arg_pos: lexer::Pos,
+        arg_pos: token::Pos,
         arg_index: usize,
         range_start: Option<(Number, bool)>,
         range_end: Option<(Number, bool)>,
@@ -157,7 +157,7 @@ impl ErrorKind {
                 Some("numerical colours should fit in a u24 (max: 16777215)")
             }
             Self::UnexpectedLiteralKind {
-                got: lexer::LiteralKind::Colour,
+                got: token::LiteralKind::Colour,
                 ..
             } => Some("colours cannot be used as hex numbers; did you use a correct command?"),
             // TODO help for invalid commands

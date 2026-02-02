@@ -1,6 +1,6 @@
 use arrayvec::ArrayVec;
 
-use crate::lexer;
+use crate::lexer::token;
 
 #[derive(Debug, Clone)]
 pub struct Icon<'s> {
@@ -10,12 +10,12 @@ pub struct Icon<'s> {
 #[derive(Debug, Clone)]
 pub struct Command<'s> {
     pub name: &'s str,
-    pub name_pos: lexer::Pos,
+    pub name_pos: token::Pos,
     pub args: ArrayVec<Argument, 6>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Argument {
-    pub lit: lexer::Literal,
-    pub pos: lexer::Pos,
+    pub lit: token::Literal,
+    pub pos: token::Pos,
 }

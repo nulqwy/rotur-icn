@@ -1,4 +1,4 @@
-use rotur_icn_syntax::lexer;
+use rotur_icn_syntax::lexer::token;
 use rotur_icn_units::{Colour, Number, Vector};
 
 #[derive(Debug, Clone)]
@@ -8,7 +8,7 @@ pub struct IconHir {
 
 #[derive(Debug, Clone)]
 pub struct Operation {
-    pub cmd_pos: lexer::Pos,
+    pub cmd_pos: token::Pos,
     pub cmd_index: usize,
     pub kind: OperationKind,
 }

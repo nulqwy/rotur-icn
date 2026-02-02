@@ -1,9 +1,9 @@
 use std::fmt;
 
-use rotur_icn_syntax::lexer::{self, display::PosDisplay};
+use rotur_icn_syntax::lexer::{display::PosDisplay, token};
 
 pub struct Error {
-    pub cmd_pos: lexer::Pos,
+    pub cmd_pos: token::Pos,
     pub cmd_index: usize,
     pub kind: ErrorKind,
 }

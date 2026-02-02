@@ -1,16 +1,12 @@
-use rotur_icn_syntax::{lexer, parser::ast};
-
-use hir::{
-    ContinueLine, DrawArc, DrawCurve, DrawDisk, DrawEllipse, DrawLine, DrawRectangle, DrawTriangle,
-    IconHir, MoveCentre, Operation, OperationKind, ResetCentre, SetColour, SetWidth,
-};
+use rotur_icn_syntax::{lexer::token, parser::ast};
+use rotur_icn_units::{Colour, Number, Vector};
 
 mod display;
 mod error;
 pub mod hir;
 
 pub use error::{Error, ErrorKind};
-use rotur_icn_units::{Colour, Number, Vector};
+use hir::*;
 
 pub fn lower(icon: &ast::Icon) -> (IconHir, Vec<Error>) {
     let mut errors = Vec::new();
@@ -275,7 +271,7 @@ fn validate_arg_value(
     i: usize,
 ) -> bool {
     let Some(ast::Argument {
-        lit: lexer::Literal::Number(value),
+        lit: token::Literal::Number(value),
         pos: arg_pos,
     }) = cmd.args.get(i)
     else {
@@ -316,16 +312,16 @@ fn get_number(errors: &mut Vec<Error>, cmd: &ast::Command, cmd_index: usize, i: 
     cmd.args
         .get(i)
         .map(|lit| match lit.lit {
-            lexer::Literal::Number(n) => n,
-            lexer::Literal::Colour(col) => {
+            token::Literal::Number(n) => n,
+            token::Literal::Colour(col) => {
                 errors.push(Error {
                     cmd_pos: cmd.name_pos,
                     cmd_index,
                     kind: ErrorKind::UnexpectedLiteralKind {
                         arg_pos: lit.pos,
                         arg_index: i,
-                        exp: lexer::LiteralKind::Number,
-                        got: lexer::LiteralKind::Colour,
+                        exp: token::LiteralKind::Number,
+                        got: token::LiteralKind::Colour,
                     },
                 });
 
@@ -341,13 +337,13 @@ fn get_colour(errors: &mut Vec<Error>, cmd: &ast::Command, cmd_index: usize, i: 
     cmd.args
         .get(i)
         .map(|lit| match lit.lit {
-            lexer::Literal::Colour(col) => Colour {
+            token::Literal::Colour(col) => Colour {
                 r: col.r,
                 g: col.g,
                 b: col.b,
                 a: 0xff,
             },
-            lexer::Literal::Number(n) => {
+            token::Literal::Number(n) => {
                 let int = n as u32;
                 let [b, g, r, overflow] = int.to_le_bytes();
 

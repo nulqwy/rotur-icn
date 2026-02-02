@@ -1,15 +1,11 @@
 pub mod display;
 mod error;
-mod token;
+pub mod token;
 
 use rotur_icn_units::{Colour, Number};
 
 pub use error::{Error, ErrorKind};
-pub use token::{Identifier, Literal, LiteralKind, Token};
-
-pub type Loc = lexgen_util::Loc;
-pub type Pos = (Loc, Loc);
-pub type PToken<'s> = (Loc, Token<'s>, Loc);
+use token::*;
 
 lexgen::lexer! {
     Lexer(State<'err>) -> Token<'input>;

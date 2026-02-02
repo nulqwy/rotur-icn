@@ -1,15 +1,15 @@
 use std::fmt;
 
-use crate::lexer::{self, display::PosDisplay};
+use crate::lexer::{display::PosDisplay, token};
 
 #[derive(Debug, Clone)]
 pub enum Error {
     TooManyArguments {
-        keyword_pos: lexer::Pos,
-        overflow_pos: lexer::Pos,
+        keyword_pos: token::Pos,
+        overflow_pos: token::Pos,
     },
     StrandedArguments {
-        stranded_pos: lexer::Pos,
+        stranded_pos: token::Pos,
     },
 }
 
