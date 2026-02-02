@@ -128,7 +128,7 @@ impl DrawArc {
 #[derive(Debug, Clone)]
 pub struct DrawEllipse {
     pub centre: Vector,
-    pub width: Number,
+    pub major: Number,
     pub ratio: Number,
     pub direction: Number,
 }

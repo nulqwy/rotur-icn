@@ -194,24 +194,24 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
                     }
                 }
                 hir::OperationKind::DrawEllipse(draw_ellipse) => {
-                    let height = draw_ellipse.width * draw_ellipse.ratio;
-                    let direction = -draw_ellipse.direction * std::f32::consts::PI / 180.;
+                    let minor = draw_ellipse.major * draw_ellipse.ratio;
+                    let direction = -draw_ellipse.direction.to_radians();
 
                     let centre = origin + draw_ellipse.centre;
 
                     last_point = Some(
                         centre
                             + Vector::new_from_length(
-                                height,
+                                minor,
                                 direction + std::f32::consts::FRAC_PI_2,
                             ),
                     );
 
                     lir::ElementKind::Ellipse(lir::Ellipse {
                         centre,
-                        sizes: Vector {
-                            x: draw_ellipse.width,
-                            y: height,
+                        axis: Vector {
+                            x: draw_ellipse.major,
+                            y: minor,
                         },
                         direction,
                         outline_width: width,

@@ -95,7 +95,7 @@ impl fmt::Display for lir::Ellipse {
         write!(
             f,
             "ellipse {} s{} dir {:.2}rad ow{}",
-            self.centre, self.sizes, self.direction, self.outline_width,
+            self.centre, self.axis, self.direction, self.outline_width,
         )
     }
 }

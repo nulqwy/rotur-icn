@@ -71,7 +71,7 @@ pub struct Arc {
 #[derive(Debug, Clone)]
 pub struct Ellipse {
     pub centre: Vector,
-    pub sizes: Vector,
+    pub axis: Vector,
     pub direction: Number,
     pub outline_width: Number,
 }

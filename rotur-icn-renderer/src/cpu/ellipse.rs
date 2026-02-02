@@ -3,7 +3,7 @@ use rotur_icn_units::Vector;
 
 // from https://www.shadertoy.com/view/tt3yz7
 pub fn distance_sq(el: &lir::Ellipse, pos: Vector) -> f32 {
-    let e = el.sizes;
+    let e = el.axis;
     let p_abs = (pos - el.centre).rotate(-el.direction).abs();
     let ei = 1. / e;
     let e2 = e.powi(2);

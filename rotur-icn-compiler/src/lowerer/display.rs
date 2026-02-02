@@ -118,7 +118,7 @@ impl fmt::Display for hir::DrawEllipse {
         write!(
             f,
             "draw ellipse {} s{}/{} dir {}deg",
-            self.centre, self.width, self.ratio, self.direction,
+            self.centre, self.major, self.ratio, self.direction,
         )
     }
 }

@@ -176,7 +176,7 @@ pub fn lower(icon: &ast::Icon) -> (IconHir, Vec<Error>) {
                     cmd_pos: cmd.name_pos,
                     kind: OperationKind::DrawEllipse(DrawEllipse {
                         centre,
-                        width,
+                        major: width,
                         ratio,
                         direction,
                     }),
