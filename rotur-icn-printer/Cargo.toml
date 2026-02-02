@@ -1,0 +1,12 @@
+[package]
+name = "rotur-icn-printer"
+version = "0.1.0"
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+arrayvec = "0.7.6"
+rotur-icn-compiler = { version = "0.1.0", path = "../rotur-icn-compiler" }
+rotur-icn-syntax = { version = "0.1.0", path = "../rotur-icn-syntax" }
+rotur-icn-units = { version = "0.1.0", path = "../rotur-icn-units" }

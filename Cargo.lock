@@ -105,6 +105,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "rotur-icn-printer"
+version = "0.1.0"
+dependencies = [
+ "arrayvec",
+ "rotur-icn-compiler",
+ "rotur-icn-syntax",
+ "rotur-icn-units",
+]
+
+[[package]]
 name = "rotur-icn-renderer"
 version = "0.1.0"
 dependencies = [

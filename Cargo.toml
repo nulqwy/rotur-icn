@@ -3,7 +3,7 @@ resolver = "3"
 members = [
   "rotur-icn-units", "rotur-icn-syntax", "rotur-icn-compiler",
   "rotur-icn-pipeline", "rotur-icn-renderer", "rotur-icn-viewer"
-]
+, "rotur-icn-printer"]
 
 [workspace.package]
 edition = "2024"
