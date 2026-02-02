@@ -2,7 +2,7 @@ mod display;
 
 // reversed order for a noop u32 -> Colour
 #[cfg(target_endian = "little")]
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Colour {
     pub a: u8,
     pub b: u8,
@@ -11,7 +11,7 @@ pub struct Colour {
 }
 
 #[cfg(target_endian = "big")]
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Colour {
     pub r: u8,
     pub g: u8,
