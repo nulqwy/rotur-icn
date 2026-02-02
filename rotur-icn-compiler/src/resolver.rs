@@ -160,11 +160,11 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
                     continue;
                 }
                 hir::OperationKind::DrawArc(draw_arc) => {
-                    let direction = draw_arc.direction * std::f32::consts::PI / 18.;
-                    let arm_angle = draw_arc.arm_angle * std::f32::consts::PI / 180.;
+                    let direction = draw_arc.direction.to_radians() * 10.;
+                    let arm_angle = draw_arc.arm_angle.to_radians();
 
-                    let end_angle = std::f32::consts::FRAC_PI_2 - (direction - arm_angle);
                     let start_angle = std::f32::consts::FRAC_PI_2 - (direction + arm_angle);
+                    let end_angle = std::f32::consts::FRAC_PI_2 - (direction - arm_angle);
 
                     let centre = origin + draw_arc.centre;
 
