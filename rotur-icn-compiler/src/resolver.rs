@@ -18,7 +18,7 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
 
     let mut elements = Vec::with_capacity(hir.operations.len());
     let mut dangling_contlines_chained = false;
-    for op in &hir.operations {
+    for (op_i, op) in hir.operations.iter().enumerate() {
         if !matches!(op.kind, hir::OperationKind::ContinueLine(..)) {
             dangling_contlines_chained = false;
         }
@@ -79,7 +79,7 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
                         if !dangling_contlines_chained {
                             errors.push(Error {
                                 cmd_pos: op.cmd_pos,
-                                cmd_index: op.cmd_index,
+                                cmd_index: op_i,
                                 kind: ErrorKind::DanglingContinuedLine,
                             });
 

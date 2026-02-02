@@ -9,7 +9,6 @@ pub struct IconHir {
 #[derive(Debug, Clone)]
 pub struct Operation {
     pub cmd_pos: token::Pos,
-    pub cmd_index: usize,
     pub kind: OperationKind,
 }
 

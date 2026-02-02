@@ -26,7 +26,6 @@ pub fn lower(icon: &ast::Icon) -> (IconHir, Vec<Error>) {
 
                 Operation {
                     cmd_pos: cmd.name_pos,
-                    cmd_index,
                     kind: OperationKind::SetWidth(SetWidth { value }),
                 }
             }
@@ -37,7 +36,6 @@ pub fn lower(icon: &ast::Icon) -> (IconHir, Vec<Error>) {
 
                 Operation {
                     cmd_pos: cmd.name_pos,
-                    cmd_index,
                     kind: OperationKind::SetColour(SetColour { value }),
                 }
             }
@@ -49,7 +47,6 @@ pub fn lower(icon: &ast::Icon) -> (IconHir, Vec<Error>) {
 
                 Operation {
                     cmd_pos: cmd.name_pos,
-                    cmd_index,
                     kind: OperationKind::DrawLine(DrawLine { start, end }),
                 }
             }
@@ -60,7 +57,6 @@ pub fn lower(icon: &ast::Icon) -> (IconHir, Vec<Error>) {
 
                 Operation {
                     cmd_pos: cmd.name_pos,
-                    cmd_index,
                     kind: OperationKind::ContinueLine(ContinueLine { next }),
                 }
             }
@@ -71,7 +67,6 @@ pub fn lower(icon: &ast::Icon) -> (IconHir, Vec<Error>) {
 
                 Operation {
                     cmd_pos: cmd.name_pos,
-                    cmd_index,
                     kind: OperationKind::DrawDisk(DrawDisk { centre }),
                 }
             }
@@ -91,7 +86,6 @@ pub fn lower(icon: &ast::Icon) -> (IconHir, Vec<Error>) {
 
                 Operation {
                     cmd_pos: cmd.name_pos,
-                    cmd_index,
                     kind: OperationKind::DrawRectangle(DrawRectangle {
                         centre,
                         sizes,
@@ -108,7 +102,6 @@ pub fn lower(icon: &ast::Icon) -> (IconHir, Vec<Error>) {
 
                 Operation {
                     cmd_pos: cmd.name_pos,
-                    cmd_index,
                     kind: OperationKind::DrawTriangle(DrawTriangle { a, b, c }),
                 }
             }
@@ -119,7 +112,6 @@ pub fn lower(icon: &ast::Icon) -> (IconHir, Vec<Error>) {
 
                 Operation {
                     cmd_pos: cmd.name_pos,
-                    cmd_index,
                     kind: OperationKind::MoveCentre(MoveCentre { change }),
                 }
             }
@@ -128,7 +120,6 @@ pub fn lower(icon: &ast::Icon) -> (IconHir, Vec<Error>) {
 
                 Operation {
                     cmd_pos: cmd.name_pos,
-                    cmd_index,
                     kind: OperationKind::ResetCentre(ResetCentre),
                 }
             }
@@ -157,7 +148,6 @@ pub fn lower(icon: &ast::Icon) -> (IconHir, Vec<Error>) {
 
                 Operation {
                     cmd_pos: cmd.name_pos,
-                    cmd_index,
                     kind: OperationKind::DrawArc(DrawArc {
                         centre,
                         radius,
@@ -184,7 +174,6 @@ pub fn lower(icon: &ast::Icon) -> (IconHir, Vec<Error>) {
 
                 Operation {
                     cmd_pos: cmd.name_pos,
-                    cmd_index,
                     kind: OperationKind::DrawEllipse(DrawEllipse {
                         centre,
                         width,
@@ -202,7 +191,6 @@ pub fn lower(icon: &ast::Icon) -> (IconHir, Vec<Error>) {
 
                 Operation {
                     cmd_pos: cmd.name_pos,
-                    cmd_index,
                     kind: OperationKind::DrawCurve(DrawCurve {
                         start,
                         control,
