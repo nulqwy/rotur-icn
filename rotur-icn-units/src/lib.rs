@@ -1,7 +1,5 @@
 mod colour;
 mod number;
-#[cfg(feature = "rand")]
-mod rand;
 mod vector;
 
 pub use colour::Colour;
