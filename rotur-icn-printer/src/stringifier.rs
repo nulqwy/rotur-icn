@@ -1,3 +1,5 @@
+// FIXME rewrite to use std::fmt
+
 use std::fmt::Write as _;
 
 use rotur_icn_syntax::{lexer::token, parser::ast};
