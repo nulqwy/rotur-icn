@@ -2,7 +2,7 @@ use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
 pub fn distance_sq(el: &lir::Arc, pos: Vector) -> f32 {
-    assert_ne!(
+    debug_assert_ne!(
         el.start_angle, el.end_angle,
         "arcless arcs should be resolved to discs"
     );
