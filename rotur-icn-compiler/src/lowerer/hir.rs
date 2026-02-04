@@ -28,6 +28,41 @@ pub enum OperationKind {
     DrawCurve(DrawCurve),
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum OperationKindTag {
+    SetWidth,
+    SetColour,
+    DrawLine,
+    ContinueLine,
+    DrawDisk,
+    DrawRectangle,
+    DrawTriangle,
+    MoveCentre,
+    ResetCentre,
+    DrawArc,
+    DrawEllipse,
+    DrawCurve,
+}
+
+impl OperationKind {
+    pub fn tag(&self) -> OperationKindTag {
+        match self {
+            OperationKind::SetWidth(_) => OperationKindTag::SetWidth,
+            OperationKind::SetColour(_) => OperationKindTag::SetColour,
+            OperationKind::DrawLine(_) => OperationKindTag::DrawLine,
+            OperationKind::ContinueLine(_) => OperationKindTag::ContinueLine,
+            OperationKind::DrawDisk(_) => OperationKindTag::DrawDisk,
+            OperationKind::DrawRectangle(_) => OperationKindTag::DrawRectangle,
+            OperationKind::DrawTriangle(_) => OperationKindTag::DrawTriangle,
+            OperationKind::MoveCentre(_) => OperationKindTag::MoveCentre,
+            OperationKind::ResetCentre(_) => OperationKindTag::ResetCentre,
+            OperationKind::DrawArc(_) => OperationKindTag::DrawArc,
+            OperationKind::DrawEllipse(_) => OperationKindTag::DrawEllipse,
+            OperationKind::DrawCurve(_) => OperationKindTag::DrawCurve,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct SetWidth {
     pub value: Number,
