@@ -1,0 +1,16 @@
+[package]
+name = "rotur-icn-rand"
+version = "0.1.0"
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+arrayvec = "0.7.6"
+rand = { version = "0.9.2", default-features = false }
+rotur-icn-compiler = { version = "0.1.0", path = "../rotur-icn-compiler" }
+rotur-icn-units = { version = "0.1.0", path = "../rotur-icn-units" }
+
+[dev-dependencies]
+rand = "0.9.2"
+rotur-icn-printer = { path = "../rotur-icn-printer" }
