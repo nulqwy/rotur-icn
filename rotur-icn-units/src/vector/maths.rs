@@ -107,6 +107,33 @@ impl Vector {
         }
     }
 
+    pub fn min_axis(self) -> Number {
+        self.x.min(self.y)
+    }
+
+    pub fn max_axis(self) -> Number {
+        self.x.max(self.y)
+    }
+
+    pub fn midpoint(self, other: Self) -> Self {
+        Self {
+            x: self.x.midpoint(other.x),
+            y: self.y.midpoint(other.y),
+        }
+    }
+
+    /// Find (BL, TR) points of a rectangle formed by the 2 points
+    pub fn min_max(self, other: Self) -> (Self, Self) {
+        fn min_max_f(a: f32, b: f32) -> (f32, f32) {
+            if a > b { (b, a) } else { (a, b) }
+        }
+
+        let (min_x, max_x) = min_max_f(self.x, other.x);
+        let (min_y, max_y) = min_max_f(self.y, other.y);
+
+        (Self { x: min_x, y: min_y }, Self { x: max_x, y: max_y })
+    }
+
     // for conjugate
     pub fn conj_add(self, other: Self) -> Self {
         Self {
