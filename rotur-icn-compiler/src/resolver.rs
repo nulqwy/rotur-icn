@@ -195,10 +195,10 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
                 }
                 hir::OperationKind::DrawEllipse(draw_ellipse) => {
                     let minor = draw_ellipse.major * draw_ellipse.ratio;
+
                     let direction = -draw_ellipse.direction.to_radians();
 
                     let centre = origin + draw_ellipse.centre;
-
                     last_point = Some(
                         centre
                             + Vector::new_from_length(
@@ -207,15 +207,30 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
                             ),
                     );
 
-                    lir::ElementKind::Ellipse(lir::Ellipse {
-                        centre,
-                        axis: Vector {
-                            x: draw_ellipse.major,
-                            y: minor,
-                        },
-                        direction,
-                        outline_width: width,
-                    })
+                    if draw_ellipse.major == 0. {
+                        lir::ElementKind::Disk(lir::Disk {
+                            centre,
+                            radius: width / 2.,
+                        })
+                    } else if draw_ellipse.ratio == 0. {
+                        let to_end = Vector::new_from_length(draw_ellipse.major, direction);
+
+                        lir::ElementKind::Line(lir::Line {
+                            start: centre - to_end,
+                            end: centre + to_end,
+                            width,
+                        })
+                    } else {
+                        lir::ElementKind::Ellipse(lir::Ellipse {
+                            centre,
+                            axis: Vector {
+                                x: draw_ellipse.major,
+                                y: minor,
+                            },
+                            direction,
+                            outline_width: width,
+                        })
+                    }
                 }
                 hir::OperationKind::DrawCurve(draw_curve) => {
                     let end = origin + draw_curve.end;

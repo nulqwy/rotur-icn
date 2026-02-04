@@ -3,6 +3,15 @@ use rotur_icn_units::Vector;
 
 // from https://www.shadertoy.com/view/tt3yz7
 pub fn distance_sq(el: &lir::Ellipse, pos: Vector) -> f32 {
+    debug_assert!(
+        el.axis.x != 0. && el.axis.y != 0.,
+        "zero-length-axis ellipse should be resolved to a dot or a line"
+    );
+    debug_assert_ne!(
+        el.axis.x, el.axis.y,
+        "same-axis ellipse should be resolved to a circle"
+    );
+
     let e = el.axis;
     let p_abs = (pos - el.centre).rotate(-el.direction).abs();
     let ei = 1. / e;
