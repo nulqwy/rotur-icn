@@ -160,7 +160,7 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
                     continue;
                 }
                 hir::OperationKind::DrawArc(draw_arc) => {
-                    let direction = draw_arc.direction.to_radians() * 10.;
+                    let direction = (draw_arc.direction * 10.).to_radians();
                     let arm_angle = draw_arc.arm_angle.to_radians();
 
                     let start_angle = std::f32::consts::FRAC_PI_2 - (direction + arm_angle);
@@ -178,7 +178,7 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
                             radius: draw_arc.radius,
                             width,
                         })
-                    } else if draw_arc.arm_angle == 0. {
+                    } else if draw_arc.radius == 0. || draw_arc.arm_angle == 0. {
                         lir::ElementKind::Disk(lir::Disk {
                             centre: start_point,
                             radius: width / 2.,
