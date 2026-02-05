@@ -29,7 +29,7 @@ impl Default for IcnSampler {
 
         Self {
             space: (Vector::new(-10.), Vector::new(10.)),
-            width_log_range: 0.1f32.ln()..=5.0f32.ln(),
+            width_log_range: 0.1f32.ln()..=2.0f32.ln(),
             filled_radius_range: 0.0..=1.5,
             count_range: 80..=200,
             full_colour: false,

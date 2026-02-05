@@ -87,10 +87,18 @@ impl Distribution<hir::DrawRectangle> for IcnSampler {
 
 impl Distribution<hir::DrawTriangle> for IcnSampler {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> hir::DrawTriangle {
+        let centre: Vector = self.sample(rng);
+
+        let radius: f32 = rng.random_range(self.filled_radius_range.clone());
+
+        let a: NormalVector = self.sample(rng);
+        let b: NormalVector = self.sample(rng);
+        let c: NormalVector = self.sample(rng);
+
         hir::DrawTriangle {
-            a: self.sample(rng),
-            b: self.sample(rng),
-            c: self.sample(rng),
+            a: centre + a.0 * radius,
+            b: centre + b.0 * radius,
+            c: centre + c.0 * radius,
         }
     }
 }
