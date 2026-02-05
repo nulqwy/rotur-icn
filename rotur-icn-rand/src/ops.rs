@@ -1,13 +1,17 @@
 use rand::{Rng, distr::Distribution};
+
 use rotur_icn_compiler::lowerer::hir;
 use rotur_icn_units::Vector;
 
-use crate::IcnSampler;
+use crate::units::NormalVector;
+
+use super::IcnSampler;
 
 impl Distribution<hir::SetWidth> for IcnSampler {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> hir::SetWidth {
+        let value_log = rng.random_range(self.width_log_range.clone());
         hir::SetWidth {
-            value: rng.random_range(self.width_range.clone()),
+            value: value_log.exp(),
         }
     }
 }
@@ -47,16 +51,36 @@ impl Distribution<hir::DrawDisk> for IcnSampler {
 
 impl Distribution<hir::DrawRectangle> for IcnSampler {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> hir::DrawRectangle {
-        // FIXME put some sizing restrictions so that it wouldn't fill in entire canvas
-        let a: Vector = self.sample(rng);
-        let b: Vector = self.sample(rng);
+        let filled: bool = rng.random();
 
-        let (bl, tr) = a.min_max(b);
+        if filled {
+            let centre: Vector = self.sample(rng);
 
-        hir::DrawRectangle {
-            centre: bl.midpoint(tr),
-            sizes: tr - bl,
-            filled: rng.random(),
+            let a: NormalVector = self.sample(rng);
+            let b: NormalVector = self.sample(rng);
+
+            let radius: f32 = rng.random_range(self.filled_radius_range.clone());
+            let sizes = (a.0 - b.0).abs() * radius;
+
+            hir::DrawRectangle {
+                centre,
+                sizes: sizes / 2.,
+                filled,
+            }
+        } else {
+            let a: Vector = self.sample(rng);
+            let b: Vector = self.sample(rng);
+
+            let (bl, tr) = a.min_max(b);
+
+            let centre = bl.midpoint(tr);
+            let sizes = tr - bl;
+
+            hir::DrawRectangle {
+                centre,
+                sizes: sizes / 2.,
+                filled,
+            }
         }
     }
 }

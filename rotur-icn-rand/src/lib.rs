@@ -15,7 +15,8 @@ pub use ops_store::{Operations, OperationsIterator};
 #[derive(Debug, Clone)]
 pub struct IcnSampler {
     pub space: (Vector, Vector),
-    pub width_range: RangeInclusive<f32>,
+    pub width_log_range: RangeInclusive<f32>,
+    pub filled_radius_range: RangeInclusive<f32>,
     pub count_range: RangeInclusive<usize>,
     pub full_colour: bool,
     operations_enabled: Operations,
@@ -28,7 +29,8 @@ impl Default for IcnSampler {
 
         Self {
             space: (Vector::new(-10.), Vector::new(10.)),
-            width_range: 0.1..=5.0,
+            width_log_range: 0.1f32.ln()..=5.0f32.ln(),
+            filled_radius_range: 0.0..=1.5,
             count_range: 80..=200,
             full_colour: false,
             operations_enabled,

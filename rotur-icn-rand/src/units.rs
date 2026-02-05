@@ -13,6 +13,16 @@ impl Distribution<Vector> for IcnSampler {
     }
 }
 
+pub struct NormalVector(pub Vector);
+
+impl Distribution<NormalVector> for IcnSampler {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> NormalVector {
+        let x: f32 = rng.random_range(-1.0..=1.0);
+        let y = (1. - x.powi(2)).sqrt() * if rng.random() { 1.0 } else { -1.0 };
+        NormalVector(Vector { x, y })
+    }
+}
+
 impl Distribution<Colour> for IcnSampler {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Colour {
         if self.full_colour {
