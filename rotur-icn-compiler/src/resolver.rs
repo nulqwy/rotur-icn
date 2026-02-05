@@ -13,7 +13,7 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
 
     let mut origin = Vector::ZERO;
     let mut colour = Colour::WHITE;
-    let mut width = 10.;
+    let mut width = 5.;
     let mut last_point = None;
 
     let mut elements = Vec::with_capacity(hir.operations.len());
