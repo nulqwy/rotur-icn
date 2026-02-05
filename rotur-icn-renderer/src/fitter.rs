@@ -38,7 +38,7 @@ fn get_bounds(el: &lir::Element) -> (Vector, Vector) {
 
 fn points_bounds(p: &[Vector]) -> (Vector, Vector) {
     assert!(!p.is_empty(), "no points have no bounds");
-    (min_most(p).unwrap(), max_most(p).unwrap())
+    extend_bounds((p[0], p[0]), &p[1..])
 }
 
 fn extend_bounds(b: (Vector, Vector), p: &[Vector]) -> (Vector, Vector) {
@@ -49,12 +49,4 @@ fn extend_bounds(b: (Vector, Vector), p: &[Vector]) -> (Vector, Vector) {
 
 fn extend_bound(b: (Vector, Vector), other: (Vector, Vector)) -> (Vector, Vector) {
     (b.0.min(other.0), b.1.max(other.1))
-}
-
-fn min_most(p: &[Vector]) -> Option<Vector> {
-    p.iter().copied().reduce(|m, p| m.min(p))
-}
-
-fn max_most(p: &[Vector]) -> Option<Vector> {
-    p.iter().copied().reduce(|m, p| m.max(p))
 }
