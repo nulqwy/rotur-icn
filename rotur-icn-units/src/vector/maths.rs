@@ -18,6 +18,13 @@ impl Vector {
         Self { x, y }
     }
 
+    pub fn reflect(self) -> Self {
+        Self {
+            x: self.y,
+            y: self.x,
+        }
+    }
+
     pub fn length_sq(self) -> Number {
         self.dot(self)
     }
@@ -72,6 +79,13 @@ impl Vector {
         Self {
             x: self.x.powf(power),
             y: self.y.powf(power),
+        }
+    }
+
+    pub fn sqrt(self) -> Self {
+        Self {
+            x: self.x.sqrt(),
+            y: self.y.sqrt(),
         }
     }
 
@@ -134,11 +148,10 @@ impl Vector {
         (Self { x: min_x, y: min_y }, Self { x: max_x, y: max_y })
     }
 
-    // for conjugate
-    pub fn conj_add(self, other: Self) -> Self {
+    pub fn conj(self) -> Self {
         Self {
-            x: self.x + other.x,
-            y: self.y - other.y,
+            x: self.x,
+            y: -self.y,
         }
     }
 }

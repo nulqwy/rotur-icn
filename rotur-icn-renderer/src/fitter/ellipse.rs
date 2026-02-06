@@ -1,22 +1,19 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
-use super::points_bounds;
-
 pub fn get_bounds(el: &lir::Ellipse) -> (Vector, Vector) {
     let pad = el.outline_width / 2.;
-    let bl = (el.centre - el.axis - pad).rotate(el.direction);
-    let tr = (el.centre + el.axis + pad).rotate(el.direction);
-    let br = el
-        .centre
-        .conj_add(el.axis)
-        .conj_add(Vector::new(pad))
-        .rotate(el.direction);
-    let tl = el
-        .centre
-        .conj_add(-el.axis)
-        .conj_add(-Vector::new(pad))
-        .rotate(el.direction);
 
-    points_bounds(&[bl, tr, br, tl])
+    let axis2 = el.axis.powi(2);
+    let phase = axis2.x - axis2.y;
+    let coef = el.direction.sin().powi(2);
+    let offset = phase * coef;
+
+    let bounds = Vector {
+        x: axis2.x - offset,
+        y: axis2.y + offset,
+    }
+    .sqrt();
+
+    (el.centre - bounds - pad, el.centre + bounds + pad)
 }

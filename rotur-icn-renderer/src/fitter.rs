@@ -10,17 +10,23 @@ mod line;
 mod rectangle;
 mod triangle;
 
-pub fn fit(icon: &lir::IconLir) -> (Vector, Vector) {
+pub fn fit(icon: &lir::IconLir) -> FittedCanvas {
     let (bl, tr) = icon
         .elements
         .iter()
         .map(get_bounds)
-        .reduce(extend_bound)
+        .reduce(combine_bounds)
         .unwrap_or((Vector::ZERO, Vector::ZERO));
 
-    let canvas_size = tr - bl;
-    let camera = bl + canvas_size / 2.;
-    (canvas_size, camera)
+    let size = tr - bl;
+    let camera = bl + size / 2.;
+
+    FittedCanvas { size, camera }
+}
+
+pub struct FittedCanvas {
+    pub size: Vector,
+    pub camera: Vector,
 }
 
 fn get_bounds(el: &lir::Element) -> (Vector, Vector) {
@@ -36,17 +42,20 @@ fn get_bounds(el: &lir::Element) -> (Vector, Vector) {
     }
 }
 
-fn points_bounds(p: &[Vector]) -> (Vector, Vector) {
-    assert!(!p.is_empty(), "no points have no bounds");
-    extend_bounds((p[0], p[0]), &p[1..])
+fn points_bounds(mut p: impl Iterator<Item = Vector>) -> (Vector, Vector) {
+    let base = p.next().expect("there should be at least one point");
+
+    extend_bound_many((base, base), p)
 }
 
-fn extend_bounds(b: (Vector, Vector), p: &[Vector]) -> (Vector, Vector) {
-    p.iter()
-        .copied()
-        .fold(b, |(min, max), p| (min.min(p), max.max(p)))
+fn extend_bound_many(b: (Vector, Vector), p: impl Iterator<Item = Vector>) -> (Vector, Vector) {
+    p.fold(b, extend_bound)
 }
 
-fn extend_bound(b: (Vector, Vector), other: (Vector, Vector)) -> (Vector, Vector) {
+fn extend_bound(b: (Vector, Vector), p: Vector) -> (Vector, Vector) {
+    (b.0.min(p), b.1.max(p))
+}
+
+fn combine_bounds(b: (Vector, Vector), other: (Vector, Vector)) -> (Vector, Vector) {
     (b.0.min(other.0), b.1.max(other.1))
 }

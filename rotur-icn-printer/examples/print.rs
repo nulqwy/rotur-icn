@@ -1,7 +1,7 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::{Colour, Vector};
 
-use rotur_icn_printer::print;
+use rotur_icn_printer::print_lir;
 
 fn main() {
     let icon = lir::IconLir {
@@ -24,7 +24,7 @@ fn main() {
         ],
     };
 
-    let stringified = print(&icon, false);
+    let stringified = print_lir(&icon, false);
 
     println!("{stringified}");
 }

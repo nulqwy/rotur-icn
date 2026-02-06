@@ -4,7 +4,7 @@ use rotur_icn_units::Vector;
 use super::points_bounds;
 
 pub fn get_bounds(el: &lir::Triangle) -> (Vector, Vector) {
-    let (bl, tr) = points_bounds(&[el.a, el.b, el.c]);
+    let (bl, tr) = points_bounds([el.a, el.b, el.c].into_iter());
     let pad = el.outline_width / 2.;
     (bl - pad, tr + pad)
 }

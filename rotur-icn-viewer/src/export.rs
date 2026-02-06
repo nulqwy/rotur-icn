@@ -114,7 +114,7 @@ fn process(src: &str, print_perf: bool, print_debug: (bool, bool, bool)) -> (lir
 ///
 /// If fit is set, but no explicit is given, then fit is chosen.
 /// Same if only explicit is given.
-/// If both are set, then fit sets minimum canvas size.
+/// If both are set, then largest of two per-axis is selected.
 /// If no present, then default 20×20 is given.
 ///
 /// ## Camera
@@ -132,7 +132,7 @@ fn choose_canvas_camera(
 ) -> (Vector, Vector) {
     let (canvas_f, camera_f) = fit
         .then(|| fitter::fit(icon))
-        .map(|(v, c)| (Some(v), Some(c)))
+        .map(|fc| (Some(fc.size), Some(fc.camera)))
         .unwrap_or((None, None));
 
     let final_canvas = match (canvas_f, canvas) {
@@ -153,7 +153,11 @@ fn choose_canvas_camera(
     }
 
     if print {
-        eprintln!("Chosen canvas & camera: {final_canvas} {final_camera}");
+        let half = final_canvas / 2.;
+        let bl = final_camera - half;
+        let tr = final_camera + half;
+
+        eprintln!("Chosen canvas & camera: {final_canvas} {final_camera} ({bl} - {tr})");
     }
 
     (final_canvas, final_camera)

@@ -1,12 +1,12 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
-use super::{extend_bounds, points_bounds};
+use super::{extend_bound, points_bounds};
 
 pub fn get_bounds(el: &lir::Arc) -> (Vector, Vector) {
     let start = compute_p(el, el.start_angle).unwrap();
     let end = compute_p(el, el.end_angle).unwrap();
-    let bounds = points_bounds(&[start, end]);
+    let bounds = points_bounds([start, end].into_iter());
 
     let (bl, tr) = [
         0.,
@@ -16,10 +16,10 @@ pub fn get_bounds(el: &lir::Arc) -> (Vector, Vector) {
     ]
     .into_iter()
     .filter_map(|t| compute_p(el, t))
-    .fold(bounds, |b, p| extend_bounds(b, &[p]));
+    .fold(bounds, extend_bound);
 
     let pad = el.width / 2.;
-    (bl - pad, tr + pad)
+    (el.centre + bl - pad, el.centre + tr + pad)
 }
 
 fn compute_p(arc: &lir::Arc, t: f32) -> Option<Vector> {
