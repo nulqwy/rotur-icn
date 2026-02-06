@@ -4,8 +4,8 @@ use rotur_icn_units::Vector;
 use super::{extend_bound, points_bounds};
 
 pub fn get_bounds(el: &lir::Arc) -> (Vector, Vector) {
-    let start = compute_p(el, el.start_angle).unwrap();
-    let end = compute_p(el, el.end_angle).unwrap();
+    let start = Vector::new_from_length(el.radius, el.start_angle);
+    let end = Vector::new_from_length(el.radius, el.end_angle);
     let bounds = points_bounds([start, end].into_iter());
 
     let (bl, tr) = [
@@ -23,5 +23,5 @@ pub fn get_bounds(el: &lir::Arc) -> (Vector, Vector) {
 }
 
 fn compute_p(arc: &lir::Arc, t: f32) -> Option<Vector> {
-    (arc.start_angle <= t && t <= arc.end_angle).then_some(Vector::new_from_length(arc.radius, t))
+    (arc.start_angle < t && t < arc.end_angle).then(|| Vector::new_from_length(arc.radius, t))
 }
