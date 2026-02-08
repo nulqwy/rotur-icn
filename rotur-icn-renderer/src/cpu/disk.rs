@@ -1,12 +1,24 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
-pub fn distance_sq(el: &lir::Disk, pos: Vector) -> f32 {
-    let rel_pos = pos - el.centre;
-
-    rel_pos.length_sq()
+#[derive(Debug, Clone)]
+pub struct Disk {
+    centre: Vector,
+    outline: f32,
 }
 
-pub fn test(el: &lir::Disk, pos: Vector) -> bool {
-    distance_sq(el, pos) <= el.radius * el.radius
+impl Disk {
+    pub fn new(el: &lir::Disk) -> Self {
+        Self {
+            centre: el.centre,
+            outline: el.radius,
+        }
+    }
+
+    pub fn test(&self, pos: Vector) -> bool {
+        let rel = pos - self.centre;
+        let d = rel.length_sq();
+
+        d <= self.outline
+    }
 }

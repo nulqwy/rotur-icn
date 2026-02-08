@@ -154,6 +154,10 @@ impl Vector {
             y: -self.y,
         }
     }
+
+    pub fn within(self, bb: (Self, Self)) -> bool {
+        (bb.0.x <= self.x && self.x <= bb.1.x) && (bb.0.y <= self.y && self.y <= bb.1.y)
+    }
 }
 
 impl ops::Neg for Vector {

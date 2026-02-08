@@ -11,15 +11,35 @@ mod maths;
 mod rectangle;
 mod triangle;
 
-pub struct Renderer<'i> {
-    icon: Option<&'i lir::IconLir>,
+pub struct Renderer {
+    icon: Option<ComputedIcon>,
     pub background_colour: Colour,
     pub canvas: Vector,
     pub scaling: Number,
     pub camera_pos: Vector,
 }
 
-impl Default for Renderer<'_> {
+struct ComputedIcon {
+    elements: Vec<ComputedElement>,
+}
+
+struct ComputedElement {
+    colour: InternalColour,
+    data: ComputedElementData,
+}
+
+enum ComputedElementData {
+    Line(line::Line),
+    Disk(disk::Disk),
+    Circle(circle::Circle),
+    Rectangle(rectangle::Rectangle),
+    Triangle(triangle::Triangle),
+    Arc(arc::Arc),
+    Ellipse(ellipse::Ellipse),
+    Curve(curve::Curve),
+}
+
+impl Default for Renderer {
     fn default() -> Self {
         Self {
             icon: None,
@@ -31,7 +51,7 @@ impl Default for Renderer<'_> {
     }
 }
 
-impl<'i> Renderer<'i> {
+impl Renderer {
     pub fn new(
         canvas: Vector,
         scaling: Number,
@@ -47,8 +67,40 @@ impl<'i> Renderer<'i> {
         }
     }
 
-    pub fn load(&mut self, icon: &'i lir::IconLir) {
-        self.icon = Some(icon);
+    pub fn load(&mut self, icon: &lir::IconLir) {
+        self.icon = Some(ComputedIcon {
+            elements: icon
+                .elements
+                .iter()
+                .map(|el| ComputedElement {
+                    colour: el.colour.into(),
+                    data: match &el.kind {
+                        lir::ElementKind::Line(line) => {
+                            ComputedElementData::Line(line::Line::new(line))
+                        }
+                        lir::ElementKind::Disk(disk) => {
+                            ComputedElementData::Disk(disk::Disk::new(disk))
+                        }
+                        lir::ElementKind::Circle(circle) => {
+                            ComputedElementData::Circle(circle::Circle::new(circle))
+                        }
+                        lir::ElementKind::Rectangle(rectangle) => {
+                            ComputedElementData::Rectangle(rectangle::Rectangle::new(rectangle))
+                        }
+                        lir::ElementKind::Triangle(triangle) => {
+                            ComputedElementData::Triangle(triangle::Triangle::new(triangle))
+                        }
+                        lir::ElementKind::Arc(arc) => ComputedElementData::Arc(arc::Arc::new(arc)),
+                        lir::ElementKind::Ellipse(ellipse) => {
+                            ComputedElementData::Ellipse(ellipse::Ellipse::new(ellipse))
+                        }
+                        lir::ElementKind::Curve(curve) => {
+                            ComputedElementData::Curve(curve::Curve::new(curve))
+                        }
+                    },
+                })
+                .collect(),
+        });
     }
 
     pub fn new_buf(&self) -> (Vec<u8>, (usize, usize)) {
@@ -77,6 +129,7 @@ impl<'i> Renderer<'i> {
 
         let icon = self
             .icon
+            .as_ref()
             .expect("icon should have been loaded by this point");
         let bg_colour = self.background_colour.into();
 
@@ -109,19 +162,19 @@ impl<'i> Renderer<'i> {
         }
     }
 
-    fn render_element(el: &lir::Element, pos: Vector) -> Option<InternalColour> {
-        let intersects = match &el.kind {
-            lir::ElementKind::Line(line) => line::test(line, pos),
-            lir::ElementKind::Disk(disk) => disk::test(disk, pos),
-            lir::ElementKind::Circle(circle) => circle::test(circle, pos),
-            lir::ElementKind::Rectangle(rectangle) => rectangle::test(rectangle, pos),
-            lir::ElementKind::Triangle(triangle) => triangle::test(triangle, pos),
-            lir::ElementKind::Arc(arc) => arc::test(arc, pos),
-            lir::ElementKind::Ellipse(ellipse) => ellipse::test(ellipse, pos),
-            lir::ElementKind::Curve(curve) => curve::test(curve, pos),
+    fn render_element(el: &ComputedElement, pos: Vector) -> Option<InternalColour> {
+        let intersects = match &el.data {
+            ComputedElementData::Line(line) => line.test(pos),
+            ComputedElementData::Disk(disk) => disk.test(pos),
+            ComputedElementData::Circle(circle) => circle.test(pos),
+            ComputedElementData::Rectangle(rectangle) => rectangle.test(pos),
+            ComputedElementData::Triangle(triangle) => triangle.test(pos),
+            ComputedElementData::Arc(arc) => arc.test(pos),
+            ComputedElementData::Ellipse(ellipse) => ellipse.test(pos),
+            ComputedElementData::Curve(curve) => curve.test(pos),
         };
 
-        intersects.then_some(el.colour.into())
+        intersects.then_some(el.colour)
     }
 }
 

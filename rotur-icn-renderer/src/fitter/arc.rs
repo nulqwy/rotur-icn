@@ -15,6 +15,7 @@ pub fn get_bounds(el: &lir::Arc) -> (Vector, Vector) {
         std::f32::consts::PI + std::f32::consts::FRAC_PI_2,
     ]
     .into_iter()
+    .flat_map(|a| [a, -a].into_iter()) // FIXME a very lazy solution
     .filter_map(|t| compute_p(el, t))
     .fold(bounds, extend_bound);
 

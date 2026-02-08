@@ -1,39 +1,63 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
-// from https://www.shadertoy.com/view/tt3yz7
-pub fn distance_sq(el: &lir::Ellipse, pos: Vector) -> f32 {
-    debug_assert!(
-        el.axis.x != 0. && el.axis.y != 0.,
-        "zero-length-axis ellipse should be resolved to a dot or a line"
-    );
-    debug_assert_ne!(
-        el.axis.x, el.axis.y,
-        "same-axis ellipse should be resolved to a circle"
-    );
-
-    let e = el.axis;
-    let p_abs = (pos - el.centre).rotate(-el.direction).abs();
-    let ei = 1. / e;
-    let e2 = e.powi(2);
-    let ve = ei
-        * Vector {
-            x: e2.x - e2.y,
-            y: e2.y - e2.x,
-        };
-
-    let mut t = Vector::new_normal(std::f32::consts::FRAC_PI_4);
-    for _ in 0..3 {
-        let v = ve * t.powi(3);
-        let u = (p_abs - v).normalise() * (t * e - v).length();
-        let w = ei * (v + u);
-        t = w.clamp(0., 1.).normalise();
-    }
-
-    let nearest_abs = t * e;
-    (p_abs - nearest_abs).length_sq()
+pub struct Ellipse {
+    bb: (Vector, Vector),
+    centre: Vector,
+    axis: Vector,
+    rotated_by: f32,
+    axis_inverse: Vector,
+    axis_v: Vector,
+    outline: f32,
 }
 
-pub fn test(el: &lir::Ellipse, pos: Vector) -> bool {
-    distance_sq(el, pos) <= el.outline_width * el.outline_width / 4.
+impl Ellipse {
+    pub fn new(el: &lir::Ellipse) -> Self {
+        assert!(
+            el.axis.x != 0. && el.axis.y != 0.,
+            "zero-length-axis ellipse should be resolved to a dot or a line"
+        );
+        assert_ne!(
+            el.axis.x, el.axis.y,
+            "same-axis ellipse should be resolved to a circle"
+        );
+
+        let axis_inverse = 1. / el.axis;
+        let axis2 = el.axis.powi(2);
+        let axis_v = axis_inverse * Vector::new(axis2.x - axis2.y).conj();
+
+        Self {
+            // TODO add internal culling box
+            bb: crate::fitter::ellipse::get_bounds(el),
+            centre: el.centre,
+            axis: el.axis,
+            rotated_by: -el.direction,
+            axis_inverse,
+            axis_v,
+            outline: el.outline_width.powi(2) / 4.,
+        }
+    }
+
+    // from https://www.shadertoy.com/view/tt3yz7
+    // TODO find another algo which supports a rotated ellipse within itself
+    pub fn test(&self, pos: Vector) -> bool {
+        if !pos.within(self.bb) {
+            return false;
+        }
+
+        let p_abs = (pos - self.centre).rotate(self.rotated_by).abs();
+
+        let mut t = Vector::new_normal(std::f32::consts::FRAC_PI_4);
+        for _ in 0..3 {
+            let v = self.axis_v * t.powi(3);
+            let u = (p_abs - v).normalise() * (t * self.axis - v).length();
+            let w = self.axis_inverse * (v + u);
+            t = w.clamp(0., 1.).normalise();
+        }
+
+        let nearest_abs = t * self.axis;
+        let d = (p_abs - nearest_abs).length_sq();
+
+        d <= self.outline
+    }
 }

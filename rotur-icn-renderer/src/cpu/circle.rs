@@ -1,13 +1,29 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
-pub fn distance(el: &lir::Circle, pos: Vector) -> f32 {
-    let rel_pos = pos - el.centre;
-
-    (rel_pos.length() - el.radius).abs()
+pub struct Circle {
+    centre: Vector,
+    inner_outline: f32,
+    outer_outline: f32,
 }
 
-// TODO rewrite in terms of range checking, which would allow to remove the sqrt from the calcs
-pub fn test(el: &lir::Circle, pos: Vector) -> bool {
-    distance(el, pos) <= el.width / 2.
+impl Circle {
+    pub fn new(el: &lir::Circle) -> Self {
+        let halfwidth = el.width / 2.;
+        let inner_outline = (el.radius - halfwidth).powi(2);
+        let outer_outline = (el.radius + halfwidth).powi(2);
+
+        Self {
+            centre: el.centre,
+            inner_outline,
+            outer_outline,
+        }
+    }
+
+    pub fn test(&self, pos: Vector) -> bool {
+        let rel_pos = pos - self.centre;
+        let d = rel_pos.length_sq();
+
+        self.inner_outline <= d && d <= self.outer_outline
+    }
 }

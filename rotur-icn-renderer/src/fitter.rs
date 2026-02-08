@@ -1,14 +1,14 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
-mod arc;
-mod circle;
-mod curve;
-mod disk;
-mod ellipse;
-mod line;
-mod rectangle;
-mod triangle;
+pub mod arc;
+pub mod circle;
+pub mod curve;
+pub mod disk;
+pub mod ellipse;
+pub mod line;
+pub mod rectangle;
+pub mod triangle;
 
 pub fn fit(icon: &lir::IconLir) -> FittedCanvas {
     let (bl, tr) = icon
