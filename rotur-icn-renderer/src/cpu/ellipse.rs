@@ -1,6 +1,8 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
+use super::shape::Shape;
+
 pub struct Ellipse {
     bb: (Vector, Vector),
     centre: Vector,
@@ -37,10 +39,12 @@ impl Ellipse {
             outline: el.outline_width.powi(2) / 4.,
         }
     }
+}
 
+impl Shape for Ellipse {
     // from https://www.shadertoy.com/view/tt3yz7
     // TODO find another algo which supports a rotated ellipse within itself
-    pub fn test(&self, pos: Vector) -> bool {
+    fn test(&self, pos: Vector) -> bool {
         if !pos.within(self.bb) {
             return false;
         }

@@ -1,6 +1,8 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
+use super::shape::Shape;
+
 pub struct Arc {
     bb: (Vector, Vector),
     centre: Vector,
@@ -46,8 +48,10 @@ impl Arc {
             outer_outline,
         }
     }
+}
 
-    pub fn test(&self, pos: Vector) -> bool {
+impl Shape for Arc {
+    fn test(&self, pos: Vector) -> bool {
         if !pos.within(self.bb) {
             return false;
         }

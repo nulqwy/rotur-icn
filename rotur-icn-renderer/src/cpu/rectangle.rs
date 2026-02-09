@@ -1,6 +1,8 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
+use super::shape::Shape;
+
 pub struct Rectangle {
     centre: Vector,
     halfsizes: Vector,
@@ -20,8 +22,10 @@ impl Rectangle {
             filled: el.filled,
         }
     }
+}
 
-    pub fn test(&self, pos: Vector) -> bool {
+impl Shape for Rectangle {
+    fn test(&self, pos: Vector) -> bool {
         let rel_pos_abs = (pos - self.centre).abs();
 
         let d_vec = rel_pos_abs - self.halfsizes;

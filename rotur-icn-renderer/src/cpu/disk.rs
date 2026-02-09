@@ -1,6 +1,8 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
+use super::shape::Shape;
+
 #[derive(Debug, Clone)]
 pub struct Disk {
     centre: Vector,
@@ -14,8 +16,10 @@ impl Disk {
             outline: el.radius,
         }
     }
+}
 
-    pub fn test(&self, pos: Vector) -> bool {
+impl Shape for Disk {
+    fn test(&self, pos: Vector) -> bool {
         let rel = pos - self.centre;
         let d = rel.length_sq();
 

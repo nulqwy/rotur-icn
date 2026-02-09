@@ -1,6 +1,8 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
+use super::shape::Shape;
+
 pub struct Circle {
     centre: Vector,
     inner_outline: f32,
@@ -19,8 +21,10 @@ impl Circle {
             outer_outline,
         }
     }
+}
 
-    pub fn test(&self, pos: Vector) -> bool {
+impl Shape for Circle {
+    fn test(&self, pos: Vector) -> bool {
         let rel_pos = pos - self.centre;
         let d = rel_pos.length_sq();
 

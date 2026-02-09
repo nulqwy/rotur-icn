@@ -3,6 +3,8 @@ use std::f32;
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
+use super::shape::Shape;
+
 pub struct Line {
     bb: (Vector, Vector),
     start: Vector,
@@ -26,8 +28,10 @@ impl Line {
             outline: el.width.powi(2) / 4.,
         }
     }
+}
 
-    pub fn test(&self, pos: Vector) -> bool {
+impl Shape for Line {
+    fn test(&self, pos: Vector) -> bool {
         if !pos.within(self.bb) {
             return false;
         }

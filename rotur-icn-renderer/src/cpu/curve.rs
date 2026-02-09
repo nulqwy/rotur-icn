@@ -1,7 +1,7 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
-use super::maths::cos_acos_3;
+use super::{maths::cos_acos_3, shape::Shape};
 
 pub struct Curve {
     bb: (Vector, Vector),
@@ -29,10 +29,12 @@ impl Curve {
             outline,
         }
     }
+}
 
+impl Shape for Curve {
     // based on https://www.shadertoy.com/view/MlKcDD
     // TODO try using the faster apprx method + aggressive triangle culling
-    pub fn test(&self, pos: Vector) -> bool {
+    fn test(&self, pos: Vector) -> bool {
         if !pos.within(self.bb) {
             return false;
         }

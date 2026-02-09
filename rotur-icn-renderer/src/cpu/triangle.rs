@@ -1,6 +1,8 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::Vector;
 
+use super::shape::Shape;
+
 pub struct Triangle {
     bb: (Vector, Vector),
     a: Vector,
@@ -40,7 +42,24 @@ impl Triangle {
         }
     }
 
-    pub fn test(&self, pos: Vector) -> bool {
+    #[inline]
+    fn line_dist(side: Vector, side_cro: f32, start_pos: Vector, end_pos: Vector) -> f32 {
+        let side_dot = side.dot(start_pos);
+
+        let start_closer = side_dot.is_sign_negative();
+        let end_closer = side_dot > side.length_sq();
+
+        match (start_closer, end_closer) {
+            (true, false) => start_pos.length_sq(),
+            (false, true) => end_pos.length_sq(),
+            (false, false) => side_cro.powi(2) / side.length_sq(),
+            (true, true) => unreachable!("point cannot be outside at both places"),
+        }
+    }
+}
+
+impl Shape for Triangle {
+    fn test(&self, pos: Vector) -> bool {
         if !pos.within(self.bb) {
             return false;
         }
@@ -83,20 +102,5 @@ impl Triangle {
         };
 
         d <= self.outline
-    }
-
-    #[inline]
-    fn line_dist(side: Vector, side_cro: f32, start_pos: Vector, end_pos: Vector) -> f32 {
-        let side_dot = side.dot(start_pos);
-
-        let start_closer = side_dot.is_sign_negative();
-        let end_closer = side_dot > side.length_sq();
-
-        match (start_closer, end_closer) {
-            (true, false) => start_pos.length_sq(),
-            (false, true) => end_pos.length_sq(),
-            (false, false) => side_cro.powi(2) / side.length_sq(),
-            (true, true) => unreachable!("point cannot be outside at both places"),
-        }
     }
 }

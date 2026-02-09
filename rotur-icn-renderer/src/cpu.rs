@@ -1,42 +1,26 @@
 use rotur_icn_compiler::resolver::lir;
 use rotur_icn_units::{Colour, Number, Vector};
 
+use crate::cpu::shape::ComputedShapesBundle;
+
 mod arc;
 mod circle;
+mod colour;
 mod curve;
 mod disk;
 mod ellipse;
 mod line;
 mod maths;
 mod rectangle;
+mod shape;
 mod triangle;
 
 pub struct Renderer {
-    icon: Option<ComputedIcon>,
+    icon: Option<ComputedShapesBundle>,
     pub background_colour: Colour,
     pub canvas: Vector,
     pub scaling: Number,
     pub camera_pos: Vector,
-}
-
-struct ComputedIcon {
-    elements: Vec<ComputedElement>,
-}
-
-struct ComputedElement {
-    colour: InternalColour,
-    data: ComputedElementData,
-}
-
-enum ComputedElementData {
-    Line(line::Line),
-    Disk(disk::Disk),
-    Circle(circle::Circle),
-    Rectangle(rectangle::Rectangle),
-    Triangle(triangle::Triangle),
-    Arc(arc::Arc),
-    Ellipse(ellipse::Ellipse),
-    Curve(curve::Curve),
 }
 
 impl Default for Renderer {
@@ -68,39 +52,7 @@ impl Renderer {
     }
 
     pub fn load(&mut self, icon: &lir::IconLir) {
-        self.icon = Some(ComputedIcon {
-            elements: icon
-                .elements
-                .iter()
-                .map(|el| ComputedElement {
-                    colour: el.colour.into(),
-                    data: match &el.kind {
-                        lir::ElementKind::Line(line) => {
-                            ComputedElementData::Line(line::Line::new(line))
-                        }
-                        lir::ElementKind::Disk(disk) => {
-                            ComputedElementData::Disk(disk::Disk::new(disk))
-                        }
-                        lir::ElementKind::Circle(circle) => {
-                            ComputedElementData::Circle(circle::Circle::new(circle))
-                        }
-                        lir::ElementKind::Rectangle(rectangle) => {
-                            ComputedElementData::Rectangle(rectangle::Rectangle::new(rectangle))
-                        }
-                        lir::ElementKind::Triangle(triangle) => {
-                            ComputedElementData::Triangle(triangle::Triangle::new(triangle))
-                        }
-                        lir::ElementKind::Arc(arc) => ComputedElementData::Arc(arc::Arc::new(arc)),
-                        lir::ElementKind::Ellipse(ellipse) => {
-                            ComputedElementData::Ellipse(ellipse::Ellipse::new(ellipse))
-                        }
-                        lir::ElementKind::Curve(curve) => {
-                            ComputedElementData::Curve(curve::Curve::new(curve))
-                        }
-                    },
-                })
-                .collect(),
-        });
+        self.icon = Some(ComputedShapesBundle::new(icon));
     }
 
     pub fn new_buf(&self) -> (Vec<u8>, (usize, usize)) {
@@ -149,10 +101,10 @@ impl Renderer {
                 let rel_pos = Vector { x: rel_x, y: rel_y } / self.scaling + self.camera_pos;
 
                 let new_col = icon
-                    .elements
+                    .shapes
                     .iter()
                     .rev()
-                    .find_map(|el| Self::render_element(el, rel_pos))
+                    .find_map(|sp| sp.test_with_colour(rel_pos))
                     .unwrap_or(bg_colour);
 
                 let new_pixel = new_col.to_bytes();
@@ -160,40 +112,5 @@ impl Renderer {
                 pixel.copy_from_slice(&new_pixel);
             }
         }
-    }
-
-    fn render_element(el: &ComputedElement, pos: Vector) -> Option<InternalColour> {
-        let intersects = match &el.data {
-            ComputedElementData::Line(line) => line.test(pos),
-            ComputedElementData::Disk(disk) => disk.test(pos),
-            ComputedElementData::Circle(circle) => circle.test(pos),
-            ComputedElementData::Rectangle(rectangle) => rectangle.test(pos),
-            ComputedElementData::Triangle(triangle) => triangle.test(pos),
-            ComputedElementData::Arc(arc) => arc.test(pos),
-            ComputedElementData::Ellipse(ellipse) => ellipse.test(pos),
-            ComputedElementData::Curve(curve) => curve.test(pos),
-        };
-
-        intersects.then_some(el.colour)
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-struct InternalColour {
-    pub r: u8,
-    pub g: u8,
-    pub b: u8,
-    pub a: u8,
-}
-
-impl InternalColour {
-    pub fn to_bytes(self) -> [u8; 4] {
-        [self.r, self.g, self.b, self.a]
-    }
-}
-
-impl From<Colour> for InternalColour {
-    fn from(Colour { r, g, b, a }: Colour) -> Self {
-        Self { r, g, b, a }
     }
 }
