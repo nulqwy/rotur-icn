@@ -56,8 +56,11 @@ impl Vector {
 
     #[must_use]
     pub fn rotate(self, angle: Number) -> Self {
-        let (sin, cos) = angle.sin_cos();
+        self.rotate_with_coefs(angle.sin_cos())
+    }
 
+    #[must_use]
+    pub fn rotate_with_coefs(self, (sin, cos): (f32, f32)) -> Self {
         Self {
             x: self.x * cos - self.y * sin,
             y: self.x * sin + self.y * cos,

@@ -7,7 +7,7 @@ pub struct Ellipse {
     bb: (Vector, Vector),
     centre: Vector,
     axis: Vector,
-    rotated_by: f32,
+    rotation_coefs: (f32, f32),
     axis_inverse: Vector,
     axis_v: Vector,
     outline: f32,
@@ -34,7 +34,7 @@ impl Ellipse {
             bb: crate::fitter::ellipse::get_bounds(el),
             centre: el.centre,
             axis: el.axis,
-            rotated_by: -el.direction,
+            rotation_coefs: (-el.direction).sin_cos(),
             axis_inverse,
             axis_v,
             outline: el.outline_width.powi(2) / 4.,
@@ -50,7 +50,9 @@ impl Shape for Ellipse {
             return false;
         }
 
-        let p_abs = (pos - self.centre).rotate(self.rotated_by).abs();
+        let p_abs = (pos - self.centre)
+            .rotate_with_coefs(self.rotation_coefs)
+            .abs();
 
         let mut t = Vector::new_normal(std::f32::consts::FRAC_PI_4);
         for _ in 0..3 {
