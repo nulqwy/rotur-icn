@@ -102,11 +102,11 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
                 hir::OperationKind::DrawRectangle(draw_rectangle) => {
                     let bottom_left = origin + draw_rectangle.centre - draw_rectangle.sizes;
 
-                    if !draw_rectangle.filled {
+                    if draw_rectangle.filled {
+                        last_point = None;
+                    } else {
                         let top_right = draw_rectangle.centre + draw_rectangle.sizes;
                         last_point = Some(origin + top_right);
-                    } else {
-                        last_point = None;
                     }
 
                     lir::ElementKind::Rectangle(lir::Rectangle {
@@ -172,13 +172,14 @@ pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
                         centre + Vector::new_from_length(draw_arc.radius, start_angle);
                     last_point = Some(start_point);
 
-                    if draw_arc.arm_angle == 180. {
+                    // FIXME do relative margin
+                    if (draw_arc.arm_angle - 180.).abs() < 1e-7 {
                         lir::ElementKind::Circle(lir::Circle {
                             centre,
                             radius: draw_arc.radius,
                             width,
                         })
-                    } else if draw_arc.radius == 0. || draw_arc.arm_angle == 0. {
+                    } else if draw_arc.radius.abs() < 1e-9 || draw_arc.arm_angle.abs() < 1e-9 {
                         lir::ElementKind::Disk(lir::Disk {
                             centre: start_point,
                             radius: width / 2.,

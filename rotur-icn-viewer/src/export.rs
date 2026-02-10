@@ -81,7 +81,7 @@ pub fn export(
 fn process(src: &str, print_perf: bool, print_debug: (bool, bool, bool)) -> (lir::IconLir, Errors) {
     let start = Instant::now();
 
-    let (icon_ast, icon_hir, icon_lir, errors) = rotur_icn_pipeline::process(src);
+    let (icon_ast, icon_high_ir, icon_low_ir, errors) = rotur_icn_pipeline::process(src);
 
     let end = Instant::now();
 
@@ -90,11 +90,11 @@ fn process(src: &str, print_perf: bool, print_debug: (bool, bool, bool)) -> (lir
     }
 
     if print_debug.1 {
-        eprintln!("--- HIR ---\n{icon_hir}");
+        eprintln!("--- HIR ---\n{icon_high_ir}");
     }
 
     if print_debug.2 {
-        eprintln!("--- LIR ---\n{icon_lir}");
+        eprintln!("--- LIR ---\n{icon_low_ir}");
     }
 
     if print_perf {
@@ -105,7 +105,7 @@ fn process(src: &str, print_perf: bool, print_debug: (bool, bool, bool)) -> (lir
         );
     }
 
-    (icon_lir, errors)
+    (icon_low_ir, errors)
 }
 
 /// Choose canvas and camera settings based on other settings.
@@ -132,8 +132,7 @@ fn choose_canvas_camera(
 ) -> (Vector, Vector) {
     let (canvas_f, camera_f) = fit
         .then(|| fitter::fit(icon))
-        .map(|fc| (Some(fc.size), Some(fc.camera)))
-        .unwrap_or((None, None));
+        .map_or((None, None), |fc| (Some(fc.size), Some(fc.camera)));
 
     let final_canvas = match (canvas_f, canvas) {
         (Some(fit), Some(set)) => fit.max(set),

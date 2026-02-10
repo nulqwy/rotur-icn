@@ -7,6 +7,9 @@ license.workspace = true
 description = "the lexing & parsing machinery for rotur ICN"
 readme = "readme.md"
 
+[lints]
+workspace = true
+
 [dependencies]
 arrayvec = "0.7.6"
 lexgen = "0.16.0"

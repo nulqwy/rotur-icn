@@ -1,5 +1,10 @@
 use rotur_icn_compiler::lowerer::hir;
 
+// TODO represent as a bitwise flag store
+#[expect(
+    clippy::struct_excessive_bools,
+    reason = "a flag store, not a state machine"
+)]
 #[derive(Debug, Clone, Copy)]
 pub struct Operations {
     pub set_width: bool,
@@ -52,18 +57,18 @@ impl Operations {
     };
 
     pub fn count_enabled(self) -> usize {
-        self.set_width as usize
-            + self.set_colour as usize
-            + self.draw_line as usize
-            + self.continue_line as usize
-            + self.draw_disk as usize
-            + self.draw_rectangle as usize
-            + self.draw_triangle as usize
-            + self.move_centre as usize
-            + self.reset_centre as usize
-            + self.draw_arc as usize
-            + self.draw_ellipse as usize
-            + self.draw_curve as usize
+        usize::from(self.set_width)
+            + usize::from(self.set_colour)
+            + usize::from(self.draw_line)
+            + usize::from(self.continue_line)
+            + usize::from(self.draw_disk)
+            + usize::from(self.draw_rectangle)
+            + usize::from(self.draw_triangle)
+            + usize::from(self.move_centre)
+            + usize::from(self.reset_centre)
+            + usize::from(self.draw_arc)
+            + usize::from(self.draw_ellipse)
+            + usize::from(self.draw_curve)
     }
 
     pub fn as_bools(self) -> [bool; 12] {

@@ -29,9 +29,7 @@ impl fmt::Display for FailureError {
 impl std::error::Error for FailureError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            Self::OpenFile(err) => Some(err),
-            Self::ReadFile(err) => Some(err),
-            Self::WriteFile(err) => Some(err),
+            Self::OpenFile(err) | Self::ReadFile(err) | Self::WriteFile(err) => Some(err),
             Self::DisplayDiagnostics(err) => Some(err),
         }
     }

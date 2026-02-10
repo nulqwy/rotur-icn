@@ -27,11 +27,15 @@ pub enum ViewerMode {
 
 impl Default for ViewerMode {
     fn default() -> Self {
-        Self::Gui(Default::default())
+        Self::Gui(GuiOptions::default())
     }
 }
 
 #[derive(Debug, Clone, Options)]
+#[expect(
+    clippy::struct_excessive_bools,
+    reason = "not a state machine, but a flag store (partially)"
+)]
 pub struct ExportOptions {
     #[options(help = "print this message")]
     pub help: bool,

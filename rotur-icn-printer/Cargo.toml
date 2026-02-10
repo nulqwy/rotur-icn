@@ -5,6 +5,9 @@ edition.workspace = true
 repository.workspace = true
 license.workspace = true
 
+[lints]
+workspace = true
+
 [dependencies]
 arrayvec = "0.7.6"
 rotur-icn-compiler = { version = "0.1.0", path = "../rotur-icn-compiler" }

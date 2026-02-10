@@ -18,6 +18,7 @@ impl Vector {
         Self { x, y }
     }
 
+    #[must_use]
     pub fn reflect(self) -> Self {
         Self {
             x: self.y,
@@ -37,6 +38,7 @@ impl Vector {
         self.y.atan2(self.x)
     }
 
+    #[must_use]
     pub fn rotate_90_cc(self) -> Self {
         Self {
             x: -self.y,
@@ -44,6 +46,7 @@ impl Vector {
         }
     }
 
+    #[must_use]
     pub fn rotate_90_cw(self) -> Self {
         Self {
             x: self.y,
@@ -51,6 +54,7 @@ impl Vector {
         }
     }
 
+    #[must_use]
     pub fn rotate(self, angle: Number) -> Self {
         let (sin, cos) = angle.sin_cos();
 
@@ -68,6 +72,7 @@ impl Vector {
         self.x * other.y - self.y * other.x
     }
 
+    #[must_use]
     pub fn powi(self, power: i32) -> Self {
         Self {
             x: self.x.powi(power),
@@ -75,6 +80,7 @@ impl Vector {
         }
     }
 
+    #[must_use]
     pub fn powf(self, power: Number) -> Self {
         Self {
             x: self.x.powf(power),
@@ -82,6 +88,7 @@ impl Vector {
         }
     }
 
+    #[must_use]
     pub fn sqrt(self) -> Self {
         Self {
             x: self.x.sqrt(),
@@ -89,6 +96,7 @@ impl Vector {
         }
     }
 
+    #[must_use]
     pub fn clamp(self, min: Number, max: Number) -> Self {
         Self {
             x: self.x.clamp(min, max),
@@ -96,6 +104,7 @@ impl Vector {
         }
     }
 
+    #[must_use]
     pub fn abs(self) -> Self {
         Self {
             x: self.x.abs(),
@@ -103,10 +112,12 @@ impl Vector {
         }
     }
 
+    #[must_use]
     pub fn normalise(self) -> Self {
         self / self.length()
     }
 
+    #[must_use]
     pub fn min(self, other: Self) -> Self {
         Self {
             x: self.x.min(other.x),
@@ -114,6 +125,7 @@ impl Vector {
         }
     }
 
+    #[must_use]
     pub fn max(self, other: Self) -> Self {
         Self {
             x: self.x.max(other.x),
@@ -129,6 +141,7 @@ impl Vector {
         self.x.max(self.y)
     }
 
+    #[must_use]
     pub fn midpoint(self, other: Self) -> Self {
         Self {
             x: self.x.midpoint(other.x),
@@ -148,6 +161,7 @@ impl Vector {
         (Self { x: min_x, y: min_y }, Self { x: max_x, y: max_y })
     }
 
+    #[must_use]
     pub fn conj(self) -> Self {
         Self {
             x: self.x,

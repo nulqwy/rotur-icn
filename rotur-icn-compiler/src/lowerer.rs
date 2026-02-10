@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use rotur_icn_syntax::{lexer::token, parser::ast};
 use rotur_icn_units::{Colour, Number, Vector};
 
@@ -6,7 +8,10 @@ mod error;
 pub mod hir;
 
 pub use error::{Error, ErrorKind};
-use hir::*;
+use hir::{
+    ContinueLine, DrawArc, DrawCurve, DrawDisk, DrawEllipse, DrawLine, DrawRectangle, DrawTriangle,
+    IconHir, MoveCentre, Operation, OperationKind, ResetCentre, SetColour, SetWidth,
+};
 
 pub fn lower(icon: &ast::Icon) -> (IconHir, Vec<Error>) {
     let mut errors = Vec::new();
@@ -219,34 +224,32 @@ fn validate_arg_count(
     cmd_index: usize,
     count: usize,
 ) -> bool {
-    if cmd.args.len() > count {
-        errors.push(Error {
-            cmd_pos: cmd.name_pos,
-            cmd_index,
-            kind: ErrorKind::TooManyArguments {
-                overflow_pos: (cmd.args[count].pos.0, cmd.args.last().unwrap().pos.1),
-                exp: count,
-                got: cmd.args.len(),
-            },
-        });
-        true
-    } else if cmd.args.len() < count {
-        errors.push(Error {
-            cmd_pos: cmd.name_pos,
-            cmd_index,
-            kind: ErrorKind::TooFewArguments {
-                args_end_loc: cmd
-                    .args
-                    .last()
-                    .map(|arg| arg.pos.1)
-                    .unwrap_or(cmd.name_pos.1),
-                exp: count,
-                got: cmd.args.len(),
-            },
-        });
-        true
-    } else {
-        false
+    match cmd.args.len().cmp(&count) {
+        Ordering::Greater => {
+            errors.push(Error {
+                cmd_pos: cmd.name_pos,
+                cmd_index,
+                kind: ErrorKind::TooManyArguments {
+                    overflow_pos: (cmd.args[count].pos.0, cmd.args.last().unwrap().pos.1),
+                    exp: count,
+                    got: cmd.args.len(),
+                },
+            });
+            true
+        }
+        Ordering::Less => {
+            errors.push(Error {
+                cmd_pos: cmd.name_pos,
+                cmd_index,
+                kind: ErrorKind::TooFewArguments {
+                    args_end_loc: cmd.args.last().map_or(cmd.name_pos.1, |arg| arg.pos.1),
+                    exp: count,
+                    got: cmd.args.len(),
+                },
+            });
+            true
+        }
+        Ordering::Equal => false,
     }
 }
 
@@ -268,14 +271,16 @@ fn validate_arg_value(
 
     let mut valid = true;
 
+    // FIXME do relative margin
     if let Some((bound, inclusive)) = range_start
-        && (value < &bound || (!inclusive && value == &bound))
+        && (value < &bound || (!inclusive && (value - bound).abs() < 1e-7))
     {
         valid = false;
     }
 
+    // FIXME [above]
     if let Some((bound, inclusive)) = range_end
-        && (value > &bound || (!inclusive && value == &bound))
+        && (value > &bound || (!inclusive && (value - bound).abs() < 1e-7))
     {
         valid = false;
     }
@@ -315,7 +320,9 @@ fn get_number(errors: &mut Vec<Error>, cmd: &ast::Command, cmd_index: usize, i: 
 
                 let n: u32 = col.into();
 
-                n as Number
+                #[expect(clippy::cast_precision_loss, reason = "it should just fit")]
+                let n = n as Number;
+                n
             }
         })
         .unwrap_or_default()
@@ -331,8 +338,13 @@ fn get_colour(errors: &mut Vec<Error>, cmd: &ast::Command, cmd_index: usize, i: 
                 b: col.b,
                 a: 0xff,
             },
-            token::Literal::Number(n) => {
-                let int = n as u32;
+            token::Literal::Number(num) => {
+                #[expect(
+                    clippy::cast_possible_truncation,
+                    reason = "colours shouldn't be that large anyways"
+                )]
+                #[expect(clippy::cast_sign_loss, reason = "absolute is taken")]
+                let int = num.round().abs() as u32;
                 let [b, g, r, overflow] = int.to_le_bytes();
 
                 if overflow != 0 {

@@ -5,7 +5,7 @@ pub mod token;
 use rotur_icn_units::{Colour, Number};
 
 pub use error::{Error, ErrorKind};
-use token::*;
+use token::{Identifier, Literal, LiteralKind, Loc, PToken, Pos, Token};
 
 lexgen::lexer! {
     Lexer(State<'err>) -> Token<'input>;
@@ -73,14 +73,14 @@ lexgen::lexer! {
         let pos = lexer.match_loc();
         lexer.state().errors.push(Error { pos, kind: ErrorKind::InvalidColour });
 
-        lexer.return_(Token::Literal(Literal::Colour(Default::default())))
+        lexer.return_(Token::Literal(Literal::Colour(Colour::default())))
     },
 
     '#' => |lexer| {
         let pos = lexer.match_loc();
         lexer.state().errors.push(Error { pos, kind: ErrorKind::StrandedColour });
 
-        lexer.return_(Token::Literal(Literal::Colour(Default::default())))
+        lexer.return_(Token::Literal(Literal::Colour(Colour::default())))
     },
 
     // ------- FALLBACK -------
@@ -102,6 +102,7 @@ pub fn lex<'err, 's>(
     errors_buf: &'err mut Vec<Error>,
     src: &'s str,
 ) -> impl Iterator<Item = PToken<'s>> + use<'err, 's> {
+    #[expect(clippy::missing_panics_doc, reason = "for bug catching")]
     Lexer::new_with_state(src, State { errors: errors_buf })
         .map(|r| r.expect("all errors should be collected in a buffer instead"))
 }

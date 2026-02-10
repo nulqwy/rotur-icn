@@ -1,5 +1,5 @@
 use arrayvec::ArrayVec;
-use ast::*;
+use ast::{Argument, Command, Icon};
 
 pub mod ast;
 mod display;
@@ -26,7 +26,8 @@ pub fn parse<'s>(tokens: impl Iterator<Item = token::PToken<'s>>) -> (Icon<'s>, 
                 if let Some(err_l_loc) = err_l_loc.take() {
                     if is_capturing_overflow {
                         errors.push(Error::TooManyArguments {
-                            keyword_pos: command.expect("they shouldn't be stranded").1,
+                            #[expect(clippy::missing_panics_doc, reason = "for bug catching")]
+                            keyword_pos: command.expect("they shouldn't be stranded, as no capture happens during stranded handling").1,
                             overflow_pos: (err_l_loc, prev_r_loc),
                         });
                     } else {
@@ -46,27 +47,35 @@ pub fn parse<'s>(tokens: impl Iterator<Item = token::PToken<'s>>) -> (Icon<'s>, 
                     });
                 }
 
-                // just in case the code above gets changed and i forget
-                assert!(command.is_none(), "command should have been pushed");
+                #[expect(clippy::missing_panics_doc, reason = "for bug catching")]
+                {
+                    assert!(command.is_none(), "command should have been pushed");
+                }
 
                 command = Some((ident.value, (l, r)));
             }
             token::Token::Literal(lit) => {
                 if command.is_none() && !is_capturing_error {
-                    assert!(
-                        err_l_loc.is_none(),
-                        "no other error should be getting captured atm"
-                    );
+                    #[expect(clippy::missing_panics_doc, reason = "for bug catching")]
+                    {
+                        assert!(
+                            err_l_loc.is_none(),
+                            "no other error should be getting captured atm"
+                        );
+                    }
                     err_l_loc = Some(l);
                     is_capturing_overflow = false;
                     is_capturing_error = true;
                 } else {
                     let push_res = arguments.try_push(Argument { lit, pos: (l, r) });
                     if push_res.is_err() && !is_capturing_error {
-                        assert!(
-                            err_l_loc.is_none(),
-                            "no other error should be getting captured atm"
-                        );
+                        #[expect(clippy::missing_panics_doc, reason = "for bug catching")]
+                        {
+                            assert!(
+                                err_l_loc.is_none(),
+                                "no other error should be getting captured atm"
+                            );
+                        }
                         err_l_loc = Some(l);
                         is_capturing_overflow = true;
                         is_capturing_error = true;

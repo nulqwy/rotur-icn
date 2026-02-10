@@ -34,6 +34,7 @@ impl Curve {
 impl Shape for Curve {
     // based on https://www.shadertoy.com/view/MlKcDD
     // TODO try using the faster apprx method + aggressive triangle culling
+    #[expect(clippy::many_single_char_names)]
     fn test(&self, pos: Vector) -> bool {
         if !pos.within(self.bb) {
             return false;

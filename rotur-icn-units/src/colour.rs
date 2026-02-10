@@ -52,6 +52,10 @@ impl Colour {
         a: 0xff,
     };
 
+    #[expect(
+        clippy::inconsistent_struct_constructor,
+        reason = "order depends on machine's endiandness"
+    )]
     pub fn from_u32_with_alpha(value: u32) -> Self {
         #[cfg(target_endian = "little")]
         let [a, b, g, r] = value.to_le_bytes();

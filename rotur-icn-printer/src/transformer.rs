@@ -123,7 +123,8 @@ impl Transformer {
 
         let mut buf = ArrayVec::<_, 3>::new();
 
-        if self.width != width {
+        // FIXME relatively compare floats
+        if (self.width - width).abs() > 1e-7 {
             self.width = width;
 
             buf.push(hir::Operation {

@@ -24,10 +24,10 @@ impl fmt::Display for Command<'_> {
 
         let mut first = true;
         for arg in &self.args {
-            if !first {
-                write!(f, ", ")?;
-            } else {
+            if first {
                 first = false;
+            } else {
+                write!(f, ", ")?;
             }
 
             write!(f, "{arg}")?;

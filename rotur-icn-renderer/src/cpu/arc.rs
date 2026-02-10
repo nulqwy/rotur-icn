@@ -17,8 +17,9 @@ pub struct Arc {
 
 impl Arc {
     pub fn new(el: &lir::Arc) -> Self {
-        assert_ne!(
-            el.start_angle, el.end_angle,
+        // FIXME make float comp margin relative
+        assert!(
+            (el.start_angle - el.end_angle).abs() > 1e-7,
             "arcless arcs should be resolved to discs"
         );
 
@@ -71,12 +72,7 @@ impl Shape for Arc {
             (_, false, false) => {
                 let start_closer = to_pos.cross(self.middle).is_sign_positive();
 
-                (to_pos
-                    - match start_closer {
-                        true => self.start,
-                        false => self.end,
-                    })
-                .length_sq()
+                (to_pos - if start_closer { self.start } else { self.end }).length_sq()
             }
         };
 

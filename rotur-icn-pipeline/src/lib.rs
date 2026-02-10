@@ -15,13 +15,13 @@ pub fn process(src: &'_ str) -> (ast::Icon<'_>, hir::IconHir, lir::IconLir, Erro
 
     let lexer = lexer::lex(&mut lexing_errors, src);
     let (icon_ast, parsing_errors) = parser::parse(lexer);
-    let (icon_hir, lowering_errors) = lowerer::lower(&icon_ast);
-    let (icon_lir, resolving_errors) = resolver::resolve(&icon_hir);
+    let (icon_high_ir, lowering_errors) = lowerer::lower(&icon_ast);
+    let (icon_low_ir, resolving_errors) = resolver::resolve(&icon_high_ir);
 
     (
         icon_ast,
-        icon_hir,
-        icon_lir,
+        icon_high_ir,
+        icon_low_ir,
         Errors {
             lexing: lexing_errors,
             parsing: parsing_errors,

@@ -19,8 +19,9 @@ impl Ellipse {
             el.axis.x != 0. && el.axis.y != 0.,
             "zero-length-axis ellipse should be resolved to a dot or a line"
         );
-        assert_ne!(
-            el.axis.x, el.axis.y,
+        // FIXME use relative margin
+        assert!(
+            (el.axis.x - el.axis.y).abs() > 1e-7,
             "same-axis ellipse should be resolved to a circle"
         );
 

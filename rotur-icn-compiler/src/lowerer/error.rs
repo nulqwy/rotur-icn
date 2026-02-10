@@ -111,7 +111,7 @@ impl fmt::Display for ErrorKind {
                         write!(f, "(")?;
                     }
 
-                    write!(f, "{}", bound)?;
+                    write!(f, "{bound}")?;
                 } else {
                     write!(f, "(")?;
                 }
@@ -119,7 +119,7 @@ impl fmt::Display for ErrorKind {
                 write!(f, "..")?;
 
                 if let Some((bound, inclusive)) = range_end {
-                    write!(f, "{}", bound)?;
+                    write!(f, "{bound}")?;
 
                     if *inclusive {
                         write!(f, "]")?;

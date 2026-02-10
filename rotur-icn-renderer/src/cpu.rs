@@ -62,9 +62,15 @@ impl Renderer {
         )
     }
 
+    #[expect(clippy::cast_possible_truncation)]
+    #[expect(clippy::cast_sign_loss)]
     pub fn scaled_buf_size(&self) -> (usize, usize) {
         let scaled = self.canvas * self.scaling;
-        (scaled.x.round() as usize, scaled.y.round() as usize)
+        // FIXME forbid too large buf sizes
+        (
+            scaled.x.abs().round() as usize,
+            scaled.y.abs().round() as usize,
+        )
     }
 
     pub fn scaled_buf_size_linear(&self) -> usize {
@@ -72,6 +78,14 @@ impl Renderer {
         scaled.0 * scaled.1 * 4
     }
 
+    /// Render the loaded ICN into an RGBA buffer
+    ///
+    /// # Panics
+    ///
+    /// - If buffer length is not of correct size (4 bytes per pixel)
+    ///
+    /// - If no ICN is loaded
+    #[expect(clippy::cast_precision_loss)]
     pub fn render(&mut self, buf: &mut [u8]) {
         assert_eq!(
             buf.len(),
@@ -87,6 +101,7 @@ impl Renderer {
 
         let scaled_buf_size = self.scaled_buf_size();
 
+        // FIXME forbid too large buf sizes
         let rel_x_offset = (scaled_buf_size.0 / 2) as Number;
         let rel_y_offset = (scaled_buf_size.1 / 2) as Number;
 

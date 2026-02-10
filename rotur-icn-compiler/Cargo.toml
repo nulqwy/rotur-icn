@@ -7,6 +7,9 @@ license.workspace = true
 description = "a compiler to HIR/LIR for rotur ICN"
 readme = "readme.md"
 
+[lints]
+workspace = true
+
 [dependencies]
 rotur-icn-syntax = { version = "0.1.0", path = "../rotur-icn-syntax" }
 rotur-icn-units = { version = "0.1.0", path = "../rotur-icn-units" }

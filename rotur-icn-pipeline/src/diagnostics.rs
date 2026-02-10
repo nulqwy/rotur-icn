@@ -101,38 +101,22 @@ impl From<LowererErrorDiagnostic<'_>> for Diagnostic<()> {
                     Label::secondary((), LexerPosRange(&error.cmd_pos))
                         .with_message("while lowering this command"),
                 ]),
-            error_kind @ rotur_icn_compiler::lowerer::ErrorKind::UnexpectedLiteralKind {
+            error_kind @ (rotur_icn_compiler::lowerer::ErrorKind::UnexpectedLiteralKind {
                 arg_pos,
                 arg_index: _,
                 exp: _,
                 got: _,
-            } => Self::error()
-                .with_code(error_kind.code())
-                .with_message(error_kind)
-                .with_labels_iter([
-                    Label::primary((), LexerPosRange(arg_pos))
-                        .with_message(error_kind.help().unwrap_or("")),
-                    Label::secondary((), LexerPosRange(&error.cmd_pos))
-                        .with_message("while lowering this command"),
-                ]),
-            error_kind @ rotur_icn_compiler::lowerer::ErrorKind::InvalidNumericColour {
+            }
+            | rotur_icn_compiler::lowerer::ErrorKind::InvalidNumericColour {
                 arg_pos,
                 arg_index: _,
-            } => Self::error()
-                .with_code(error_kind.code())
-                .with_message(error_kind)
-                .with_labels_iter([
-                    Label::primary((), LexerPosRange(arg_pos))
-                        .with_message(error_kind.help().unwrap_or("")),
-                    Label::secondary((), LexerPosRange(&error.cmd_pos))
-                        .with_message("while lowering this command"),
-                ]),
-            error_kind @ rotur_icn_compiler::lowerer::ErrorKind::ArgOutOfRange {
+            }
+            | rotur_icn_compiler::lowerer::ErrorKind::ArgOutOfRange {
                 arg_pos,
                 arg_index: _,
                 range_start: _,
                 range_end: _,
-            } => Self::error()
+            }) => Self::error()
                 .with_code(error_kind.code())
                 .with_message(error_kind)
                 .with_labels_iter([

@@ -6,3 +6,6 @@ repository.workspace = true
 license.workspace = true
 description = "commonly used unit primitives within rotur ICN"
 readme = "readme.md"
+
+[lints]
+workspace = true

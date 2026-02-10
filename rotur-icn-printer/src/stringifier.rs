@@ -17,7 +17,7 @@ pub fn stringify(ast: &ast::Icon, oneline: bool) -> String {
                 // TODO handle those which are representable as #fff
                 // TODO handle alpha somehow, maybe panic?
                 token::Literal::Colour(col) => {
-                    write!(buf, " #{:0>2x}{:0>2x}{:0>2x}", col.r, col.g, col.b).unwrap()
+                    write!(buf, " #{:0>2x}{:0>2x}{:0>2x}", col.r, col.g, col.b).unwrap();
                 }
             }
         }
