@@ -1,6 +1,6 @@
 use rand::distr::Distribution as _;
 
-use rotur_icn_compiler::lowerer::hir;
+use rotur_icn_lowerer::hir;
 use rotur_icn_printer::print_hir;
 use rotur_icn_rand::IcnSampler;
 

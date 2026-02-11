@@ -1,6 +1,7 @@
 use rand::{Rng, distr::Distribution, seq::IndexedRandom};
 
-use rotur_icn_compiler::lowerer::hir;
+use rotur_icn_lexer::token;
+use rotur_icn_lowerer::hir;
 
 use super::IcnSampler;
 
@@ -11,7 +12,7 @@ impl Distribution<hir::IconHir> for IcnSampler {
         hir::IconHir {
             operations: self
                 .map(|kind| hir::Operation {
-                    cmd_pos: (Default::default(), Default::default()),
+                    cmd_pos: (token::Loc::default(), token::Loc::default()),
                     kind,
                 })
                 .sample_iter(rng)

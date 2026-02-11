@@ -2,7 +2,8 @@
 
 use std::fmt::Write as _;
 
-use rotur_icn_syntax::{lexer::token, parser::ast};
+use rotur_icn_lexer::token;
+use rotur_icn_parser::ast;
 
 pub fn stringify(ast: &ast::Icon, oneline: bool) -> String {
     // TODO with capacity? maybe based on some estimates of bytes/command

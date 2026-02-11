@@ -1,6 +1,8 @@
 use arrayvec::ArrayVec;
-use rotur_icn_compiler::{lowerer::hir, resolver::lir};
-use rotur_icn_syntax::lexer::token;
+
+use rotur_icn_lexer::token;
+use rotur_icn_lowerer::hir;
+use rotur_icn_resolver::lir;
 use rotur_icn_units::Colour;
 
 pub fn transform(lir: &lir::IconLir) -> hir::IconHir {

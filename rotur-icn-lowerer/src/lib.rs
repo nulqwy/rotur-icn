@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 
-use rotur_icn_syntax::{lexer::token, parser::ast};
+use rotur_icn_lexer::token;
+use rotur_icn_parser::ast;
 use rotur_icn_units::{Colour, Number, Vector};
 
 mod display;

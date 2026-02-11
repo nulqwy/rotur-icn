@@ -1,4 +1,4 @@
-use rotur_icn_compiler::resolver::lir;
+use rotur_icn_resolver::lir;
 use rotur_icn_units::Vector;
 
 use super::{arc, circle, colour::InternalColour, curve, disk, ellipse, line, rectangle, triangle};

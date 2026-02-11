@@ -1,6 +1,6 @@
 use rotur_icn_units::{Colour, Vector};
 
-use crate::lowerer::hir;
+use rotur_icn_lowerer::hir;
 
 mod display;
 mod error;

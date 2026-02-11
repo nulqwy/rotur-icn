@@ -7,7 +7,7 @@ mod error;
 
 pub use error::Error;
 
-use crate::lexer::token;
+use rotur_icn_lexer::token;
 
 pub fn parse<'s>(tokens: impl Iterator<Item = token::PToken<'s>>) -> (Icon<'s>, Vec<Error>) {
     let mut errors = Vec::new();

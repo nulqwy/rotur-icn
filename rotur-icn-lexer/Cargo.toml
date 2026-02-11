@@ -1,15 +1,16 @@
 [package]
-name = "rotur-icn-renderer"
+name = "rotur-icn-lexer"
 version = "0.1.0"
 edition.workspace = true
 repository.workspace = true
 license.workspace = true
-description = "a wrapper for processing rotur ICNs"
+description = "fault-tolerant ICN tokenisation"
 readme = "readme.md"
 
 [lints]
 workspace = true
 
 [dependencies]
-rotur-icn-resolver = { version = "0.1.0", path = "../rotur-icn-resolver" }
+lexgen = "0.16.0"
+lexgen_util = "0.16.0"
 rotur-icn-units = { version = "0.1.0", path = "../rotur-icn-units" }

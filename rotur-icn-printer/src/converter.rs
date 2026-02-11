@@ -1,5 +1,6 @@
-use rotur_icn_compiler::lowerer::hir;
-use rotur_icn_syntax::{lexer::token, parser::ast};
+use rotur_icn_lexer::token;
+use rotur_icn_lowerer::hir;
+use rotur_icn_parser::ast;
 
 pub fn convert(hir: &hir::IconHir) -> ast::Icon<'static> {
     ast::Icon {

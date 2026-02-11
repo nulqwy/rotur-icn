@@ -1,4 +1,4 @@
-use rotur_icn_syntax::lexer::token;
+use rotur_icn_lexer::token;
 use rotur_icn_units::{Colour, Number, Vector};
 
 #[derive(Debug, Clone)]

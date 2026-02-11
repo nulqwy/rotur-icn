@@ -1,6 +1,6 @@
 use rand::{Rng, distr::Distribution};
 
-use rotur_icn_compiler::lowerer::hir;
+use rotur_icn_lowerer::hir;
 use rotur_icn_units::Vector;
 
 use crate::units::NormalVector;

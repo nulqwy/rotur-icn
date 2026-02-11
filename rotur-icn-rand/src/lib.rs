@@ -2,7 +2,7 @@ use std::ops::RangeInclusive;
 
 use arrayvec::ArrayVec;
 
-use rotur_icn_compiler::lowerer::hir::OperationKindTag;
+use rotur_icn_lowerer::hir::OperationKindTag;
 use rotur_icn_units::Vector;
 
 mod icon;

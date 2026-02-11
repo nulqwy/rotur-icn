@@ -9,9 +9,9 @@ use codespan_reporting::{
     files::SimpleFile,
     term::termcolor::{ColorChoice, StandardStream},
 };
-use rotur_icn_compiler::resolver::lir;
 use rotur_icn_pipeline::Errors;
 use rotur_icn_renderer::{cpu::Renderer, fitter};
+use rotur_icn_resolver::lir;
 use rotur_icn_units::{Colour, Vector};
 
 use crate::{

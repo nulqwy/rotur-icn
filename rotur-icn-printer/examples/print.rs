@@ -1,4 +1,4 @@
-use rotur_icn_compiler::resolver::lir;
+use rotur_icn_resolver::lir;
 use rotur_icn_units::{Colour, Vector};
 
 use rotur_icn_printer::print_lir;

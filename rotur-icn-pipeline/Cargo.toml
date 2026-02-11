@@ -12,8 +12,10 @@ workspace = true
 
 [dependencies]
 codespan-reporting = { version = "0.13.1", optional = true }
-rotur-icn-compiler = { version = "0.1.0", path = "../rotur-icn-compiler" }
-rotur-icn-syntax = { version = "0.1.0", path = "../rotur-icn-syntax" }
+rotur-icn-lexer = { version = "0.1.0", path = "../rotur-icn-lexer" }
+rotur-icn-lowerer = { version = "0.1.0", path = "../rotur-icn-lowerer" }
+rotur-icn-parser = { version = "0.1.0", path = "../rotur-icn-parser" }
+rotur-icn-resolver = { version = "0.1.0", path = "../rotur-icn-resolver" }
 
 [features]
 diagnostics = ["dep:codespan-reporting"]

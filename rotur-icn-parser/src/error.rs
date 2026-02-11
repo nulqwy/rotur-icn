@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::lexer::{display::PosDisplay, token};
+use rotur_icn_lexer::{display::PosDisplay, token};
 
 #[derive(Debug, Clone)]
 pub enum Error {

@@ -1,6 +1,6 @@
 use std::fmt;
 
-use rotur_icn_syntax::lexer::{display::PosDisplay, token};
+use rotur_icn_lexer::{display::PosDisplay, token};
 use rotur_icn_units::Number;
 
 #[derive(Debug, Clone)]

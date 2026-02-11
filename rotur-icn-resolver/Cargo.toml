@@ -1,15 +1,16 @@
 [package]
-name = "rotur-icn-compiler"
+name = "rotur-icn-resolver"
 version = "0.1.0"
 edition.workspace = true
 repository.workspace = true
 license.workspace = true
-description = "a compiler to HIR/LIR for rotur ICN"
+description = "ICN simplifier and contextness remover"
 readme = "readme.md"
 
 [lints]
 workspace = true
 
 [dependencies]
-rotur-icn-syntax = { version = "0.1.0", path = "../rotur-icn-syntax" }
+rotur-icn-lexer = { version = "0.1.0", path = "../rotur-icn-lexer" }
+rotur-icn-lowerer = { version = "0.1.0", path = "../rotur-icn-lowerer" }
 rotur-icn-units = { version = "0.1.0", path = "../rotur-icn-units" }

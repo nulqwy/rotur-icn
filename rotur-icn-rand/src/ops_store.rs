@@ -1,4 +1,4 @@
-use rotur_icn_compiler::lowerer::hir;
+use rotur_icn_lowerer::hir;
 
 // TODO represent as a bitwise flag store
 #[expect(

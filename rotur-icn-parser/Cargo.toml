@@ -1,0 +1,15 @@
+[package]
+name = "rotur-icn-parser"
+version = "0.1.0"
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+description = "fault-tolerant ICN parsing"
+readme = "readme.md"
+
+[lints]
+workspace = true
+
+[dependencies]
+arrayvec = "0.7.6"
+rotur-icn-lexer = { version = "0.1.0", path = "../rotur-icn-lexer" }

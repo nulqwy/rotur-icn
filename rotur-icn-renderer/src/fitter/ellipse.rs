@@ -1,4 +1,4 @@
-use rotur_icn_compiler::resolver::lir;
+use rotur_icn_resolver::lir;
 use rotur_icn_units::Vector;
 
 pub fn get_bounds(el: &lir::Ellipse) -> (Vector, Vector) {

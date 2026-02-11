@@ -27,7 +27,7 @@ impl Errors {
     }
 }
 
-struct LexerErrorDiagnostic<'err>(pub &'err rotur_icn_syntax::lexer::Error);
+struct LexerErrorDiagnostic<'err>(pub &'err rotur_icn_lexer::Error);
 
 impl From<LexerErrorDiagnostic<'_>> for Diagnostic<()> {
     fn from(LexerErrorDiagnostic(error): LexerErrorDiagnostic) -> Self {
@@ -41,12 +41,12 @@ impl From<LexerErrorDiagnostic<'_>> for Diagnostic<()> {
     }
 }
 
-struct ParserErrorDiagnostic<'err>(pub &'err rotur_icn_syntax::parser::Error);
+struct ParserErrorDiagnostic<'err>(pub &'err rotur_icn_parser::Error);
 
 impl From<ParserErrorDiagnostic<'_>> for Diagnostic<()> {
     fn from(ParserErrorDiagnostic(error): ParserErrorDiagnostic) -> Self {
         match error {
-            error @ rotur_icn_syntax::parser::Error::TooManyArguments {
+            error @ rotur_icn_parser::Error::TooManyArguments {
                 keyword_pos,
                 overflow_pos,
             } => Self::error()
@@ -58,24 +58,22 @@ impl From<ParserErrorDiagnostic<'_>> for Diagnostic<()> {
                     Label::secondary((), LexerPosRange(keyword_pos))
                         .with_message("while parsing this command"),
                 ]),
-            error @ rotur_icn_syntax::parser::Error::StrandedArguments { stranded_pos } => {
-                Self::error()
-                    .with_code(error.code())
-                    .with_message(error.message())
-                    .with_labels_iter([
-                        Label::primary((), LexerPosRange(stranded_pos)).with_message(error.help())
-                    ])
-            }
+            error @ rotur_icn_parser::Error::StrandedArguments { stranded_pos } => Self::error()
+                .with_code(error.code())
+                .with_message(error.message())
+                .with_labels_iter([
+                    Label::primary((), LexerPosRange(stranded_pos)).with_message(error.help())
+                ]),
         }
     }
 }
 
-struct LowererErrorDiagnostic<'err>(pub &'err rotur_icn_compiler::lowerer::Error);
+struct LowererErrorDiagnostic<'err>(pub &'err rotur_icn_lowerer::Error);
 
 impl From<LowererErrorDiagnostic<'_>> for Diagnostic<()> {
     fn from(LowererErrorDiagnostic(error): LowererErrorDiagnostic) -> Self {
         match &error.kind {
-            error_kind @ rotur_icn_compiler::lowerer::ErrorKind::TooManyArguments {
+            error_kind @ rotur_icn_lowerer::ErrorKind::TooManyArguments {
                 overflow_pos,
                 exp: _,
                 got: _,
@@ -88,7 +86,7 @@ impl From<LowererErrorDiagnostic<'_>> for Diagnostic<()> {
                     Label::secondary((), LexerPosRange(&error.cmd_pos))
                         .with_message("while lowering this command"),
                 ]),
-            error_kind @ rotur_icn_compiler::lowerer::ErrorKind::TooFewArguments {
+            error_kind @ rotur_icn_lowerer::ErrorKind::TooFewArguments {
                 args_end_loc,
                 exp: _,
                 got: _,
@@ -101,17 +99,17 @@ impl From<LowererErrorDiagnostic<'_>> for Diagnostic<()> {
                     Label::secondary((), LexerPosRange(&error.cmd_pos))
                         .with_message("while lowering this command"),
                 ]),
-            error_kind @ (rotur_icn_compiler::lowerer::ErrorKind::UnexpectedLiteralKind {
+            error_kind @ (rotur_icn_lowerer::ErrorKind::UnexpectedLiteralKind {
                 arg_pos,
                 arg_index: _,
                 exp: _,
                 got: _,
             }
-            | rotur_icn_compiler::lowerer::ErrorKind::InvalidNumericColour {
+            | rotur_icn_lowerer::ErrorKind::InvalidNumericColour {
                 arg_pos,
                 arg_index: _,
             }
-            | rotur_icn_compiler::lowerer::ErrorKind::ArgOutOfRange {
+            | rotur_icn_lowerer::ErrorKind::ArgOutOfRange {
                 arg_pos,
                 arg_index: _,
                 range_start: _,
@@ -125,7 +123,7 @@ impl From<LowererErrorDiagnostic<'_>> for Diagnostic<()> {
                     Label::secondary((), LexerPosRange(&error.cmd_pos))
                         .with_message("while lowering this command"),
                 ]),
-            error_kind @ rotur_icn_compiler::lowerer::ErrorKind::InvalidCommand => Self::error()
+            error_kind @ rotur_icn_lowerer::ErrorKind::InvalidCommand => Self::error()
                 .with_code(error_kind.code())
                 .with_message(error_kind)
                 .with_labels_iter([Label::primary((), LexerPosRange(&error.cmd_pos))
@@ -134,23 +132,21 @@ impl From<LowererErrorDiagnostic<'_>> for Diagnostic<()> {
     }
 }
 
-struct ResolverErrorDiagnostic<'err>(pub &'err rotur_icn_compiler::resolver::Error);
+struct ResolverErrorDiagnostic<'err>(pub &'err rotur_icn_resolver::Error);
 
 impl From<ResolverErrorDiagnostic<'_>> for Diagnostic<()> {
     fn from(ResolverErrorDiagnostic(error): ResolverErrorDiagnostic<'_>) -> Self {
         match &error.kind {
-            error_kind @ rotur_icn_compiler::resolver::ErrorKind::DanglingContinuedLine => {
-                Self::error()
-                    .with_code(error_kind.code())
-                    .with_message(error_kind)
-                    .with_labels_iter([Label::primary((), LexerPosRange(&error.cmd_pos))
-                        .with_message("while resolving this command")])
-            }
+            error_kind @ rotur_icn_resolver::ErrorKind::DanglingContinuedLine => Self::error()
+                .with_code(error_kind.code())
+                .with_message(error_kind)
+                .with_labels_iter([Label::primary((), LexerPosRange(&error.cmd_pos))
+                    .with_message("while resolving this command")]),
         }
     }
 }
 
-struct LexerPosRange<'p>(&'p rotur_icn_syntax::lexer::token::Pos);
+struct LexerPosRange<'p>(&'p rotur_icn_lexer::token::Pos);
 
 impl From<LexerPosRange<'_>> for Range<usize> {
     fn from(LexerPosRange((start, end)): LexerPosRange) -> Self {
@@ -158,7 +154,7 @@ impl From<LexerPosRange<'_>> for Range<usize> {
     }
 }
 
-struct LexerLocRange<'l>(&'l rotur_icn_syntax::lexer::token::Loc);
+struct LexerLocRange<'l>(&'l rotur_icn_lexer::token::Loc);
 
 impl From<LexerLocRange<'_>> for Range<usize> {
     fn from(LexerLocRange(loc): LexerLocRange) -> Self {

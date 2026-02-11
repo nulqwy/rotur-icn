@@ -1,11 +1,7 @@
-use rotur_icn_compiler::{
-    lowerer::{self, hir},
-    resolver::{self, lir},
-};
-use rotur_icn_syntax::{
-    lexer,
-    parser::{self, ast},
-};
+use rotur_icn_lexer as lexer;
+use rotur_icn_lowerer::{self as lowerer, hir};
+use rotur_icn_parser::{self as parser, ast};
+use rotur_icn_resolver::{self as resolver, lir};
 
 #[cfg(feature = "diagnostics")]
 mod diagnostics;

@@ -1,6 +1,6 @@
 use arrayvec::ArrayVec;
 
-use crate::lexer::token;
+use rotur_icn_lexer::token;
 
 #[derive(Debug, Clone)]
 pub struct Icon<'s> {

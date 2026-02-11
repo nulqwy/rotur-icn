@@ -1,7 +1,9 @@
 [workspace]
 resolver = "3"
 members = [
-  "rotur-icn-units", "rotur-icn-syntax", "rotur-icn-compiler",
+  "rotur-icn-units",
+  "rotur-icn-lexer", "rotur-icn-parser",
+  "rotur-icn-lowerer", "rotur-icn-resolver",
   "rotur-icn-pipeline", "rotur-icn-renderer", "rotur-icn-viewer",
   "rotur-icn-printer", "rotur-icn-rand"
 ]

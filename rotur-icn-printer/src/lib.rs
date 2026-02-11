@@ -1,4 +1,5 @@
-use rotur_icn_compiler::{lowerer::hir, resolver::lir};
+use rotur_icn_lowerer::hir;
+use rotur_icn_resolver::lir;
 
 mod converter;
 mod stringifier;

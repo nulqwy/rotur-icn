@@ -156,11 +156,29 @@ dependencies = [
 ]
 
 [[package]]
-name = "rotur-icn-compiler"
+name = "rotur-icn-lexer"
 version = "0.1.0"
 dependencies = [
- "rotur-icn-syntax",
+ "lexgen",
+ "lexgen_util",
  "rotur-icn-units",
+]
+
+[[package]]
+name = "rotur-icn-lowerer"
+version = "0.1.0"
+dependencies = [
+ "rotur-icn-lexer",
+ "rotur-icn-parser",
+ "rotur-icn-units",
+]
+
+[[package]]
+name = "rotur-icn-parser"
+version = "0.1.0"
+dependencies = [
+ "arrayvec",
+ "rotur-icn-lexer",
 ]
 
 [[package]]
@@ -168,8 +186,10 @@ name = "rotur-icn-pipeline"
 version = "0.1.0"
 dependencies = [
  "codespan-reporting",
- "rotur-icn-compiler",
- "rotur-icn-syntax",
+ "rotur-icn-lexer",
+ "rotur-icn-lowerer",
+ "rotur-icn-parser",
+ "rotur-icn-resolver",
 ]
 
 [[package]]
@@ -177,8 +197,10 @@ name = "rotur-icn-printer"
 version = "0.1.0"
 dependencies = [
  "arrayvec",
- "rotur-icn-compiler",
- "rotur-icn-syntax",
+ "rotur-icn-lexer",
+ "rotur-icn-lowerer",
+ "rotur-icn-parser",
+ "rotur-icn-resolver",
  "rotur-icn-units",
 ]
 
@@ -188,7 +210,8 @@ version = "0.1.0"
 dependencies = [
  "arrayvec",
  "rand",
- "rotur-icn-compiler",
+ "rotur-icn-lexer",
+ "rotur-icn-lowerer",
  "rotur-icn-printer",
  "rotur-icn-units",
 ]
@@ -197,17 +220,16 @@ dependencies = [
 name = "rotur-icn-renderer"
 version = "0.1.0"
 dependencies = [
- "rotur-icn-compiler",
+ "rotur-icn-resolver",
  "rotur-icn-units",
 ]
 
 [[package]]
-name = "rotur-icn-syntax"
+name = "rotur-icn-resolver"
 version = "0.1.0"
 dependencies = [
- "arrayvec",
- "lexgen",
- "lexgen_util",
+ "rotur-icn-lexer",
+ "rotur-icn-lowerer",
  "rotur-icn-units",
 ]
 
@@ -222,9 +244,9 @@ dependencies = [
  "ansi_term",
  "codespan-reporting",
  "gumdrop",
- "rotur-icn-compiler",
  "rotur-icn-pipeline",
  "rotur-icn-renderer",
+ "rotur-icn-resolver",
  "rotur-icn-units",
 ]
 
