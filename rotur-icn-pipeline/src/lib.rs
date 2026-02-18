@@ -6,18 +6,105 @@ use rotur_icn_resolver::{self as resolver, lir};
 #[cfg(feature = "diagnostics")]
 mod diagnostics;
 
-pub fn process(src: &'_ str) -> (ast::Icon<'_>, hir::IconHir, lir::IconLir, Errors) {
+pub fn process(src: &str) -> (ast::Icon<'_>, hir::IconHir, lir::IconLir, Errors) {
     let mut lexing_errors = Vec::new();
+    let tokens = lexer::lex(src).filter_map(|(l, (t, e), r)| {
+        if let Some(e) = e {
+            lexing_errors.push(e);
+        }
 
-    let lexer = lexer::lex(&mut lexing_errors, src);
-    let (icon_ast, parsing_errors) = parser::parse(lexer);
-    let (icon_high_ir, lowering_errors) = lowerer::lower(&icon_ast);
-    let (icon_low_ir, resolving_errors) = resolver::resolve(&icon_high_ir);
+        t.map(|t| (l, t, r))
+    });
+
+    let mut parsing_errors = Vec::new();
+    let mut commands_coll = Vec::new();
+    let commands = parser::Parser::new(tokens)
+        .map(|(c, e)| {
+            if let Some(e) = e {
+                parsing_errors.push(e);
+            }
+
+            c
+        })
+        .inspect(|c| commands_coll.push(c.clone()));
+
+    let mut lowering_errors = Vec::new();
+    let mut operations_coll = Vec::new();
+    let operations = lowerer::lower(commands)
+        .filter_map(|(o, mut e)| {
+            lowering_errors.append(&mut e);
+
+            o
+        })
+        .inspect(|o| operations_coll.push(o.clone()));
+
+    let mut resolving_errors = Vec::new();
+    let elements = resolver::resolve(operations)
+        .filter_map(|(el, e)| {
+            if let Some(e) = e {
+                resolving_errors.push(e);
+            }
+
+            el
+        })
+        .collect();
 
     (
-        icon_ast,
-        icon_high_ir,
-        icon_low_ir,
+        ast::Icon {
+            commands: commands_coll,
+        },
+        hir::IconHir {
+            operations: operations_coll,
+        },
+        lir::IconLir { elements },
+        Errors {
+            lexing: lexing_errors,
+            parsing: parsing_errors,
+            lowering: lowering_errors,
+            resolving: resolving_errors,
+        },
+    )
+}
+
+pub fn process_final(src: &str) -> (lir::IconLir, Errors) {
+    let mut lexing_errors = Vec::new();
+    let tokens = lexer::lex(src).filter_map(|(l, (t, e), r)| {
+        if let Some(e) = e {
+            lexing_errors.push(e);
+        }
+
+        t.map(|t| (l, t, r))
+    });
+
+    let mut parsing_errors = Vec::new();
+    let commands = parser::Parser::new(tokens).map(|(c, e)| {
+        if let Some(e) = e {
+            parsing_errors.push(e);
+        }
+
+        c
+    });
+
+    let mut lowering_errors = Vec::new();
+    let operations = lowerer::lower(commands).filter_map(|(o, mut e)| {
+        lowering_errors.append(&mut e);
+
+        o
+    });
+
+    let mut resolving_errors = Vec::new();
+    let elements = resolver::resolve(operations)
+        .filter_map(|(el, e)| {
+            if let Some(e) = e {
+                resolving_errors.push(e);
+            }
+
+            el
+        })
+        .collect();
+
+    (
+        lir::IconLir { elements },
         Errors {
             lexing: lexing_errors,
             parsing: parsing_errors,

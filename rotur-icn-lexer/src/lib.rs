@@ -5,54 +5,65 @@ pub mod token;
 use rotur_icn_units::{Colour, Number};
 
 pub use error::{Error, ErrorKind};
-use token::{Identifier, Literal, LiteralKind, Loc, PToken, Pos, Token};
+use token::{FToken, Identifier, Literal, LiteralKind, Loc, PFToken, Span, Token};
 
 lexgen::lexer! {
-    Lexer(State<'err>) -> Token<'input>;
-
-    type Error = ErrorKind;
+    Lexer -> FToken<'input>;
 
     $$ascii_whitespace,
 
     // ------- KEYWORDS -------
 
     $$ascii_alphabetic+ => |lexer| {
-        lexer.return_(Token::Identifier(Identifier { value: lexer.match_() }))
+        lexer.return_((
+            Some(Token::Identifier(Identifier { value: lexer.match_() })),
+            None,
+        ))
     },
 
     // ------- NUMBERS -------
 
     ['-' '+']? (($$ascii_digit+ ('.' $$ascii_digit*)?) | ('.' $$ascii_digit+)) ('e' $$ascii_digit+)? => |lexer| {
         let n = lexer.match_().parse::<Number>().expect("regex guarantees a valid f64");
-        lexer.return_(Token::Literal(Literal::Number(n)))
+        lexer.return_((
+            Some(Token::Literal(Literal::Number(n))),
+            None,
+        ))
     },
 
     ['-' '+'] => |lexer| {
-        let pos = lexer.match_loc();
-        lexer.state().errors.push(Error { pos, kind: ErrorKind::StrandedNumber });
-
-        lexer.return_(Token::Literal(Literal::Number(Default::default())))
+        let span = lexer.match_loc();
+        lexer.return_((
+            Some(Token::Literal(Literal::Number(Default::default()))),
+            Some(Error { span, kind: ErrorKind::StrandedNumber }),
+        ))
     },
 
     ['-' '+']? '.' => |lexer| {
-        let pos = lexer.match_loc();
-        lexer.state().errors.push(Error { pos, kind: ErrorKind::StrandedNumber });
+        let span = lexer.match_loc();
 
-        lexer.return_(Token::Literal(Literal::Number(Default::default())))
+        lexer.return_((
+            Some(Token::Literal(Literal::Number(Default::default()))),
+            Some(Error { span, kind: ErrorKind::StrandedNumber }),
+        ))
     },
 
     ['-' '+']? '.'? 'e' $$ascii_digit* => |lexer| {
-        let pos = lexer.match_loc();
-        lexer.state().errors.push(Error { pos, kind: ErrorKind::StrandedNumber });
-
-        lexer.return_(Token::Literal(Literal::Number(Default::default())))
+        let span = lexer.match_loc();
+        lexer.return_((
+            Some(Token::Literal(Literal::Number(Default::default()))),
+            Some(Error { span, kind: ErrorKind::StrandedNumber }),
+        ))
     },
 
     // ------- COLOURS -------
 
     '#' $$ascii_hexdigit $$ascii_hexdigit $$ascii_hexdigit $$ascii_hexdigit $$ascii_hexdigit $$ascii_hexdigit => |lexer| {
         let n = u32::from_str_radix(&lexer.match_()[1..], 16).expect("regex guarantees a valid u32 (u24)");
-        lexer.return_(Token::Literal(Literal::Colour(n.try_into().expect("regex only allows for u24-sized u32"))))
+        lexer.return_((
+            Some(Token::Literal(Literal::Colour(n.try_into().expect("regex only allows for u24-sized u32")))),
+            None,
+        ))
     },
 
     // #rgb -> #rrggbb
@@ -66,43 +77,40 @@ lexgen::lexer! {
         let b = u8::from_str_radix(&match_[3..4], 16)
             .expect("regex guarantees a valid u8 (B-channel)");
 
-        lexer.return_(Token::Literal(Literal::Colour(Colour { r: r * 17, g: g * 17, b: b * 17, a: 0xff })))
+        lexer.return_((
+            Some(Token::Literal(Literal::Colour(Colour { r: r * 17, g: g * 17, b: b * 17, a: 0xff }))),
+            None,
+        ))
     },
 
     '#' $$ascii_alphanumeric+ => |lexer| {
-        let pos = lexer.match_loc();
-        lexer.state().errors.push(Error { pos, kind: ErrorKind::InvalidColour });
-
-        lexer.return_(Token::Literal(Literal::Colour(Colour::default())))
+        let span = lexer.match_loc();
+        lexer.return_((
+            Some(Token::Literal(Literal::Colour(Colour::default()))),
+            Some(Error { span, kind: ErrorKind::InvalidColour }),
+        ))
     },
 
     '#' => |lexer| {
-        let pos = lexer.match_loc();
-        lexer.state().errors.push(Error { pos, kind: ErrorKind::StrandedColour });
-
-        lexer.return_(Token::Literal(Literal::Colour(Colour::default())))
+        let span = lexer.match_loc();
+        lexer.return_((
+            Some(Token::Literal(Literal::Colour(Colour::default()))),
+            Some(Error { span, kind: ErrorKind::StrandedColour }),
+        ))
     },
 
     // ------- FALLBACK -------
 
     ($$alphanumeric | $$ascii_punctuation)+ => |lexer| {
-        let pos = lexer.match_loc();
-        lexer.state().errors.push(Error { pos, kind: ErrorKind::InvalidToken });
-
-        lexer.reset_match();
-        lexer.continue_()
+        let span = lexer.match_loc();
+        lexer.return_((
+            None,
+            Some(Error { span, kind: ErrorKind::InvalidToken })
+        ))
     },
 }
 
-struct State<'err> {
-    errors: &'err mut Vec<Error>,
-}
-
-pub fn lex<'err, 's>(
-    errors_buf: &'err mut Vec<Error>,
-    src: &'s str,
-) -> impl Iterator<Item = PToken<'s>> + use<'err, 's> {
+pub fn lex(src: &str) -> impl Iterator<Item = PFToken<'_>> {
     #[expect(clippy::missing_panics_doc, reason = "for bug catching")]
-    Lexer::new_with_state(src, State { errors: errors_buf })
-        .map(|r| r.expect("all errors should be collected in a buffer instead"))
+    Lexer::new(src).map(|r| r.expect("all errors should be recoverable"))
 }

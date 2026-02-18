@@ -1,15 +1,15 @@
 use std::fmt;
 
-use rotur_icn_lexer::{display::PosDisplay, token};
+use rotur_icn_lexer::{display::SpanDisplay, token};
 
 #[derive(Debug, Clone)]
 pub enum Error {
     TooManyArguments {
-        keyword_pos: token::Pos,
-        overflow_pos: token::Pos,
+        keyword_span: token::Span,
+        overflow_span: token::Span,
     },
     StrandedArguments {
-        stranded_pos: token::Pos,
+        stranded_span: token::Span,
     },
 }
 
@@ -17,21 +17,23 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::TooManyArguments {
-                keyword_pos,
-                overflow_pos,
+                keyword_span: keyword_pos,
+                overflow_span: overflow_pos,
             } => {
                 write!(
                     f,
                     "found too many arguments {} while parsing command {}",
-                    PosDisplay(overflow_pos),
-                    PosDisplay(keyword_pos)
+                    SpanDisplay(overflow_pos),
+                    SpanDisplay(keyword_pos)
                 )
             }
-            Self::StrandedArguments { stranded_pos } => {
+            Self::StrandedArguments {
+                stranded_span: stranded_pos,
+            } => {
                 write!(
                     f,
                     "found arguments {} at the beginning of the source",
-                    PosDisplay(stranded_pos)
+                    SpanDisplay(stranded_pos)
                 )
             }
         }

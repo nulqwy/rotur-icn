@@ -1,3 +1,4 @@
+use rotur_icn_lexer::token;
 use rotur_icn_units::{Colour, Vector};
 
 use rotur_icn_lowerer::hir;
@@ -8,248 +9,317 @@ pub mod lir;
 
 pub use error::{Error, ErrorKind};
 
-pub fn resolve(hir: &hir::IconHir) -> (lir::IconLir, Vec<Error>) {
-    let mut errors = Vec::new();
-
-    let mut origin = Vector::ZERO;
-    let mut colour = Colour::WHITE;
-    let mut width = 5.;
-    let mut last_point = None;
-
-    let mut elements = Vec::with_capacity(hir.operations.len());
-    let mut dangling_contlines_chained = false;
-    for (op_i, op) in hir.operations.iter().enumerate() {
-        if !matches!(op.kind, hir::OperationKind::ContinueLine(..)) {
-            dangling_contlines_chained = false;
-        }
-
-        let el = lir::Element {
-            colour,
-            kind: match &op.kind {
+pub fn resolve(
+    operations: impl Iterator<Item = hir::Operation>,
+) -> impl Iterator<Item = (Option<lir::Element>, Option<Error>)> {
+    operations
+        .enumerate()
+        .scan(State::default(), |s, (op_i, op)| {
+            let (kind, err) = match &op.kind {
                 hir::OperationKind::SetWidth(set_width) => {
-                    width = set_width.value;
-                    continue;
+                    resolve_set_width(s, set_width);
+                    (None, None)
                 }
                 hir::OperationKind::SetColour(set_colour) => {
-                    colour = set_colour.value;
-                    continue;
+                    resolve_set_colour(s, set_colour);
+                    (None, None)
                 }
                 hir::OperationKind::DrawLine(draw_line) => {
-                    let end = origin + draw_line.end;
-
-                    last_point = Some(end);
-
-                    if draw_line.start == draw_line.end {
-                        lir::ElementKind::Disk(lir::Disk {
-                            centre: end,
-                            radius: width / 2.,
-                        })
-                    } else {
-                        lir::ElementKind::Line(lir::Line {
-                            start: origin + draw_line.start,
-                            end,
-                            width,
-                        })
-                    }
+                    (Some(resolve_draw_line(s, draw_line)), None)
                 }
                 hir::OperationKind::ContinueLine(continue_line) => {
-                    if let Some(start) = last_point {
-                        debug_assert!(
-                            !dangling_contlines_chained,
-                            "this shouldn't happen as dangling continued lines don't define a last point",
-                        );
-
-                        let end = origin + continue_line.next;
-
-                        last_point = Some(end);
-
-                        if start == continue_line.next {
-                            lir::ElementKind::Disk(lir::Disk {
-                                centre: end,
-                                radius: width / 2.,
-                            })
-                        } else {
-                            lir::ElementKind::Line(lir::Line {
-                                start: origin + start,
-                                end,
-                                width,
-                            })
-                        }
-                    } else {
-                        if !dangling_contlines_chained {
-                            errors.push(Error {
-                                cmd_pos: op.cmd_pos,
-                                cmd_index: op_i,
-                                kind: ErrorKind::DanglingContinuedLine,
-                            });
-
-                            dangling_contlines_chained = true;
-                        }
-
-                        continue;
-                    }
+                    resolve_continue_line(s, continue_line, op.cmd_span, op_i)
+                        .map_or_else(|err| (None, err), |kind| (Some(kind), None))
                 }
                 hir::OperationKind::DrawDisk(draw_disk) => {
-                    let centre = origin + draw_disk.centre;
-
-                    last_point = Some(centre);
-
-                    lir::ElementKind::Disk(lir::Disk {
-                        centre,
-                        radius: width / 2.,
-                    })
+                    (Some(resolve_draw_disk(s, draw_disk)), None)
                 }
                 hir::OperationKind::DrawRectangle(draw_rectangle) => {
-                    let bottom_left = origin + draw_rectangle.centre - draw_rectangle.sizes;
-
-                    if draw_rectangle.filled {
-                        last_point = None;
-                    } else {
-                        let top_right = draw_rectangle.centre + draw_rectangle.sizes;
-                        last_point = Some(origin + top_right);
-                    }
-
-                    lir::ElementKind::Rectangle(lir::Rectangle {
-                        bottom_left,
-                        sizes: draw_rectangle.sizes * 2.,
-                        filled: draw_rectangle.filled,
-                        outline_width: width,
-                    })
+                    (Some(resolve_draw_rectangle(s, draw_rectangle)), None)
                 }
                 hir::OperationKind::DrawTriangle(draw_triangle) => {
-                    last_point = None;
-
-                    if draw_triangle.a == draw_triangle.b && draw_triangle.b == draw_triangle.c {
-                        lir::ElementKind::Disk(lir::Disk {
-                            centre: origin + draw_triangle.a,
-                            radius: width / 2.,
-                        })
-                    } else if draw_triangle.a == draw_triangle.b {
-                        lir::ElementKind::Line(lir::Line {
-                            start: origin + draw_triangle.a,
-                            end: origin + draw_triangle.c,
-                            width,
-                        })
-                    } else if draw_triangle.b == draw_triangle.c {
-                        lir::ElementKind::Line(lir::Line {
-                            start: origin + draw_triangle.b,
-                            end: origin + draw_triangle.a,
-                            width,
-                        })
-                    } else if draw_triangle.c == draw_triangle.a {
-                        lir::ElementKind::Line(lir::Line {
-                            start: origin + draw_triangle.c,
-                            end: origin + draw_triangle.b,
-                            width,
-                        })
-                    } else {
-                        lir::ElementKind::Triangle(lir::Triangle {
-                            a: origin + draw_triangle.a,
-                            b: origin + draw_triangle.b,
-                            c: origin + draw_triangle.c,
-                            outline_width: width,
-                        })
-                    }
+                    (Some(resolve_draw_triangle(s, draw_triangle)), None)
                 }
                 hir::OperationKind::MoveCentre(move_centre) => {
-                    origin += move_centre.change;
-                    continue;
+                    resolve_move_centre(s, move_centre);
+                    (None, None)
                 }
-                hir::OperationKind::ResetCentre(hir::ResetCentre) => {
-                    origin = Vector::ZERO;
-                    continue;
+                hir::OperationKind::ResetCentre(reset_centre) => {
+                    resolve_reset_centre(s, reset_centre);
+                    (None, None)
                 }
                 hir::OperationKind::DrawArc(draw_arc) => {
-                    let direction = (draw_arc.direction * 10.).to_radians();
-                    let arm_angle = draw_arc.arm_angle.to_radians();
-
-                    let start_angle = std::f32::consts::FRAC_PI_2 - (direction + arm_angle);
-                    let end_angle = std::f32::consts::FRAC_PI_2 - (direction - arm_angle);
-
-                    let centre = origin + draw_arc.centre;
-
-                    let start_point =
-                        centre + Vector::new_from_length(draw_arc.radius, start_angle);
-                    last_point = Some(start_point);
-
-                    // FIXME do relative margin
-                    if (draw_arc.arm_angle - 180.).abs() < 1e-7 {
-                        lir::ElementKind::Circle(lir::Circle {
-                            centre,
-                            radius: draw_arc.radius,
-                            width,
-                        })
-                    } else if draw_arc.radius.abs() < 1e-9 || draw_arc.arm_angle.abs() < 1e-9 {
-                        lir::ElementKind::Disk(lir::Disk {
-                            centre: start_point,
-                            radius: width / 2.,
-                        })
-                    } else {
-                        lir::ElementKind::Arc(lir::Arc {
-                            centre,
-                            radius: draw_arc.radius,
-                            width,
-                            start_angle,
-                            end_angle,
-                        })
-                    }
+                    (Some(resolve_draw_arc(s, draw_arc)), None)
                 }
                 hir::OperationKind::DrawEllipse(draw_ellipse) => {
-                    let minor = draw_ellipse.major * draw_ellipse.ratio;
-
-                    let direction = -draw_ellipse.direction.to_radians();
-
-                    let centre = origin + draw_ellipse.centre;
-                    last_point = Some(
-                        centre
-                            + Vector::new_from_length(
-                                minor,
-                                direction + std::f32::consts::FRAC_PI_2,
-                            ),
-                    );
-
-                    if draw_ellipse.major == 0. {
-                        lir::ElementKind::Disk(lir::Disk {
-                            centre,
-                            radius: width / 2.,
-                        })
-                    } else if draw_ellipse.ratio == 0. {
-                        let to_end = Vector::new_from_length(draw_ellipse.major, direction);
-
-                        lir::ElementKind::Line(lir::Line {
-                            start: centre - to_end,
-                            end: centre + to_end,
-                            width,
-                        })
-                    } else {
-                        lir::ElementKind::Ellipse(lir::Ellipse {
-                            centre,
-                            axis: Vector {
-                                x: draw_ellipse.major,
-                                y: minor,
-                            },
-                            direction,
-                            outline_width: width,
-                        })
-                    }
+                    (Some(resolve_draw_ellipse(s, draw_ellipse)), None)
                 }
                 hir::OperationKind::DrawCurve(draw_curve) => {
-                    let end = origin + draw_curve.end;
-
-                    last_point = Some(end);
-
-                    lir::ElementKind::Curve(lir::Curve {
-                        start: origin + draw_curve.start,
-                        end,
-                        control: origin + draw_curve.control,
-                        width,
-                    })
+                    (Some(resolve_draw_curve(s, draw_curve)), None)
                 }
-            },
-        };
+            };
 
-        elements.push(el);
+            Some((
+                kind.map(|kind| lir::Element {
+                    colour: s.colour,
+                    kind,
+                }),
+                err,
+            ))
+        })
+}
+
+struct State {
+    origin: Vector,
+    colour: Colour,
+    width: f32,
+    last_point: Option<Vector>,
+    dangling_contlines_chained: bool,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self {
+            origin: Vector::ZERO,
+            colour: Colour::WHITE,
+            width: 5.,
+            last_point: None,
+            dangling_contlines_chained: false,
+        }
+    }
+}
+
+impl State {
+    fn set_last_point(&mut self, last_point: Option<Vector>) {
+        self.last_point = last_point;
+        self.dangling_contlines_chained = false;
+    }
+}
+
+fn resolve_set_width(s: &mut State, op: &hir::SetWidth) {
+    s.width = op.value;
+}
+
+fn resolve_set_colour(s: &mut State, op: &hir::SetColour) {
+    s.colour = op.value;
+}
+
+fn resolve_draw_line(s: &mut State, op: &hir::DrawLine) -> lir::ElementKind {
+    let end = s.origin + op.end;
+
+    s.set_last_point(Some(end));
+
+    // FIXME proper f32 comp
+    if op.start == op.end {
+        lir::ElementKind::Disk(lir::Disk {
+            centre: end,
+            radius: s.width / 2.,
+        })
+    } else {
+        lir::ElementKind::Line(lir::Line {
+            start: s.origin + op.start,
+            end,
+            width: s.width,
+        })
+    }
+}
+
+fn resolve_continue_line(
+    s: &mut State,
+    op: &hir::ContinueLine,
+    span: token::Span,
+    index: usize,
+) -> Result<lir::ElementKind, Option<Error>> {
+    if let Some(start) = s.last_point {
+        debug_assert!(
+            !s.dangling_contlines_chained,
+            "this shouldn't happen as dangling continued lines don't define a last point",
+        );
+
+        let end = s.origin + op.next;
+
+        s.set_last_point(Some(end));
+
+        // FIXME proper f32 comp
+        Ok(if start == op.next {
+            lir::ElementKind::Disk(lir::Disk {
+                centre: end,
+                radius: s.width / 2.,
+            })
+        } else {
+            lir::ElementKind::Line(lir::Line {
+                start: s.origin + start,
+                end,
+                width: s.width,
+            })
+        })
+    } else {
+        Err((!s.dangling_contlines_chained).then(|| {
+            s.dangling_contlines_chained = true;
+
+            Error {
+                cmd_span: span,
+                cmd_index: index,
+                kind: ErrorKind::DanglingContinuedLine,
+            }
+        }))
+    }
+}
+
+fn resolve_draw_disk(s: &mut State, op: &hir::DrawDisk) -> lir::ElementKind {
+    let centre = s.origin + op.centre;
+
+    s.set_last_point(Some(centre));
+
+    lir::ElementKind::Disk(lir::Disk {
+        centre,
+        radius: s.width / 2.,
+    })
+}
+
+fn resolve_draw_rectangle(s: &mut State, op: &hir::DrawRectangle) -> lir::ElementKind {
+    let bottom_left = s.origin + op.centre - op.sizes;
+
+    if op.filled {
+        s.set_last_point(None);
+    } else {
+        let top_right = op.centre + op.sizes;
+        s.set_last_point(Some(s.origin + top_right));
     }
 
-    (lir::IconLir { elements }, errors)
+    lir::ElementKind::Rectangle(lir::Rectangle {
+        bottom_left,
+        sizes: op.sizes * 2.,
+        filled: op.filled,
+        outline_width: s.width,
+    })
+}
+
+fn resolve_draw_triangle(s: &mut State, op: &hir::DrawTriangle) -> lir::ElementKind {
+    s.set_last_point(None);
+
+    // FIXME proper f32 comp
+    if op.a == op.b && op.b == op.c {
+        lir::ElementKind::Disk(lir::Disk {
+            centre: s.origin + op.a,
+            radius: s.width / 2.,
+        })
+    } else if op.a == op.b {
+        lir::ElementKind::Line(lir::Line {
+            start: s.origin + op.a,
+            end: s.origin + op.c,
+            width: s.width,
+        })
+    } else if op.b == op.c {
+        lir::ElementKind::Line(lir::Line {
+            start: s.origin + op.b,
+            end: s.origin + op.a,
+            width: s.width,
+        })
+    } else if op.c == op.a {
+        lir::ElementKind::Line(lir::Line {
+            start: s.origin + op.c,
+            end: s.origin + op.b,
+            width: s.width,
+        })
+    } else {
+        lir::ElementKind::Triangle(lir::Triangle {
+            a: s.origin + op.a,
+            b: s.origin + op.b,
+            c: s.origin + op.c,
+            outline_width: s.width,
+        })
+    }
+}
+
+fn resolve_move_centre(s: &mut State, op: &hir::MoveCentre) {
+    s.origin += op.change;
+}
+
+fn resolve_reset_centre(s: &mut State, _op: &hir::ResetCentre) {
+    s.origin = Vector::ZERO;
+}
+
+fn resolve_draw_arc(s: &mut State, op: &hir::DrawArc) -> lir::ElementKind {
+    let direction = (op.direction * 10.).to_radians();
+    let arm_angle = op.arm_angle.to_radians();
+
+    let start_angle = std::f32::consts::FRAC_PI_2 - (direction + arm_angle);
+    let end_angle = std::f32::consts::FRAC_PI_2 - (direction - arm_angle);
+
+    let centre = s.origin + op.centre;
+
+    let start_point = centre + Vector::new_from_length(op.radius, start_angle);
+    s.set_last_point(Some(start_point));
+
+    // FIXME do relative margin
+    if (op.arm_angle - 180.).abs() < 1e-7 {
+        lir::ElementKind::Circle(lir::Circle {
+            centre,
+            radius: op.radius,
+            width: s.width,
+        })
+    } else if op.radius.abs() < 1e-9 || op.arm_angle.abs() < 1e-9 {
+        lir::ElementKind::Disk(lir::Disk {
+            centre: start_point,
+            radius: s.width / 2.,
+        })
+    } else {
+        lir::ElementKind::Arc(lir::Arc {
+            centre,
+            radius: op.radius,
+            width: s.width,
+            start_angle,
+            end_angle,
+        })
+    }
+}
+
+fn resolve_draw_ellipse(s: &mut State, op: &hir::DrawEllipse) -> lir::ElementKind {
+    let minor = op.major * op.ratio;
+
+    let direction = -op.direction.to_radians();
+
+    let centre = s.origin + op.centre;
+    s.set_last_point(Some(
+        centre + Vector::new_from_length(minor, direction + std::f32::consts::FRAC_PI_2),
+    ));
+
+    if op.major < 1e-9 {
+        lir::ElementKind::Disk(lir::Disk {
+            centre,
+            radius: s.width / 2.,
+        })
+    } else if op.ratio < 1e-9 {
+        let to_end = Vector::new_from_length(op.major, direction);
+
+        lir::ElementKind::Line(lir::Line {
+            start: centre - to_end,
+            end: centre + to_end,
+            width: s.width,
+        })
+    } else {
+        lir::ElementKind::Ellipse(lir::Ellipse {
+            centre,
+            axis: Vector {
+                x: op.major,
+                y: minor,
+            },
+            direction,
+            outline_width: s.width,
+        })
+    }
+}
+
+fn resolve_draw_curve(s: &mut State, op: &hir::DrawCurve) -> lir::ElementKind {
+    let end = s.origin + op.end;
+
+    s.set_last_point(Some(end));
+
+    lir::ElementKind::Curve(lir::Curve {
+        start: s.origin + op.start,
+        end,
+        control: s.origin + op.control,
+        width: s.width,
+    })
 }

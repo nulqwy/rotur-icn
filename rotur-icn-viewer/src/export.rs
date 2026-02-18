@@ -78,24 +78,40 @@ pub fn export(
     }
 }
 
-fn process(src: &str, print_perf: bool, print_debug: (bool, bool, bool)) -> (lir::IconLir, Errors) {
-    let start = Instant::now();
+fn process(
+    src: &str,
+    print_perf: bool,
+    (print_ast, print_high_ir, print_low_ir): (bool, bool, bool),
+) -> (lir::IconLir, Errors) {
+    let (icon_low_ir, errors, start, end) = if !print_ast && !print_high_ir && !print_low_ir {
+        let start = Instant::now();
 
-    let (icon_ast, icon_high_ir, icon_low_ir, errors) = rotur_icn_pipeline::process(src);
+        let (icon_low_ir, errors) = rotur_icn_pipeline::process_final(src);
 
-    let end = Instant::now();
+        let end = Instant::now();
 
-    if print_debug.0 {
-        eprintln!("--- AST ---\n{icon_ast}");
-    }
+        (icon_low_ir, errors, start, end)
+    } else {
+        let start = Instant::now();
 
-    if print_debug.1 {
-        eprintln!("--- HIR ---\n{icon_high_ir}");
-    }
+        let (icon_ast, icon_high_ir, icon_low_ir, errors) = rotur_icn_pipeline::process(src);
 
-    if print_debug.2 {
-        eprintln!("--- LIR ---\n{icon_low_ir}");
-    }
+        let end = Instant::now();
+
+        if print_ast {
+            eprintln!("--- AST ---\n{icon_ast}");
+        }
+
+        if print_high_ir {
+            eprintln!("--- HIR ---\n{icon_high_ir}");
+        }
+
+        if print_low_ir {
+            eprintln!("--- LIR ---\n{icon_low_ir}");
+        }
+
+        (icon_low_ir, errors, start, end)
+    };
 
     if print_perf {
         let perf = end - start;

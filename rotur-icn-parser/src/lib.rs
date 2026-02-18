@@ -1,5 +1,6 @@
+// TODO try rewriting with .scan()
+
 use arrayvec::ArrayVec;
-use ast::{Argument, Command, Icon};
 
 pub mod ast;
 mod display;
@@ -9,91 +10,110 @@ pub use error::Error;
 
 use rotur_icn_lexer::token;
 
-pub fn parse<'s>(tokens: impl Iterator<Item = token::PToken<'s>>) -> (Icon<'s>, Vec<Error>) {
-    let mut errors = Vec::new();
+#[derive(Debug, Clone)]
+pub struct Parser<'s, L>
+where
+    L: Iterator<Item = token::PToken<'s>>,
+{
+    lexer: L,
+    command: Option<(&'s str, token::Span)>,
+    arguments: ArrayVec<ast::Argument, 6>,
+    capturing_error: Option<(token::Loc, CapturedErrorKind)>,
+    previous_right_loc: token::Loc,
+}
 
-    let mut commands = Vec::new();
+#[derive(Debug, Clone)]
+enum CapturedErrorKind {
+    Overflow,
+    Stranded,
+}
 
-    let mut command: Option<(&'s str, token::Pos)> = None;
-    let mut arguments = ArrayVec::new();
-    let mut is_capturing_error = false;
-    let mut is_capturing_overflow = false;
-    let mut err_l_loc = None;
-    let mut prev_r_loc = token::Loc::default();
-    for (l, token, r) in tokens {
-        match token {
-            token::Token::Identifier(ident) => {
-                if let Some(err_l_loc) = err_l_loc.take() {
-                    if is_capturing_overflow {
-                        errors.push(Error::TooManyArguments {
-                            #[expect(clippy::missing_panics_doc, reason = "for bug catching")]
-                            keyword_pos: command.expect("they shouldn't be stranded, as no capture happens during stranded handling").1,
-                            overflow_pos: (err_l_loc, prev_r_loc),
-                        });
-                    } else {
-                        errors.push(Error::StrandedArguments {
-                            stranded_pos: (err_l_loc, prev_r_loc),
-                        });
-                    }
+impl<'s, L> Parser<'s, L>
+where
+    L: Iterator<Item = token::PToken<'s>>,
+{
+    pub fn new(lexer: L) -> Self {
+        Self {
+            lexer,
+            command: None,
+            arguments: ArrayVec::new(),
+            capturing_error: None,
+            previous_right_loc: token::Loc::default(),
+        }
+    }
+}
 
-                    is_capturing_error = false;
-                }
+impl<'s, L> Iterator for Parser<'s, L>
+where
+    L: Iterator<Item = token::PToken<'s>>,
+{
+    type Item = (ast::Command<'s>, Option<Error>);
 
-                if let Some((cmd, cmd_pos)) = command.take() {
-                    commands.push(Command {
-                        name: cmd,
-                        name_pos: cmd_pos,
-                        args: std::mem::take(&mut arguments),
-                    });
-                }
+    fn next(&mut self) -> Option<Self::Item> {
+        let mut error = None;
+        let mut set_error = |e| {
+            assert!(error.is_none(), "only 1 error should happen at a time");
+            error = Some(e);
+        };
 
-                #[expect(clippy::missing_panics_doc, reason = "for bug catching")]
-                {
-                    assert!(command.is_none(), "command should have been pushed");
-                }
-
-                command = Some((ident.value, (l, r)));
-            }
-            token::Token::Literal(lit) => {
-                if command.is_none() && !is_capturing_error {
-                    #[expect(clippy::missing_panics_doc, reason = "for bug catching")]
-                    {
-                        assert!(
-                            err_l_loc.is_none(),
-                            "no other error should be getting captured atm"
-                        );
-                    }
-                    err_l_loc = Some(l);
-                    is_capturing_overflow = false;
-                    is_capturing_error = true;
-                } else {
-                    let push_res = arguments.try_push(Argument { lit, pos: (l, r) });
-                    if push_res.is_err() && !is_capturing_error {
-                        #[expect(clippy::missing_panics_doc, reason = "for bug catching")]
-                        {
-                            assert!(
-                                err_l_loc.is_none(),
-                                "no other error should be getting captured atm"
-                            );
+        for (l, token, r) in &mut self.lexer {
+            match token {
+                token::Token::Identifier(ident) => {
+                    match self.capturing_error {
+                        Some((err_l_loc, CapturedErrorKind::Overflow)) => {
+                            set_error(Error::TooManyArguments {
+                                keyword_span: self.command.expect("they shouldn't be stranded, as no capture happens during stranded handling").1,
+                                overflow_span: (err_l_loc, self.previous_right_loc),
+                            });
                         }
-                        err_l_loc = Some(l);
-                        is_capturing_overflow = true;
-                        is_capturing_error = true;
+                        Some((err_l_loc, CapturedErrorKind::Stranded)) => {
+                            set_error(Error::StrandedArguments {
+                                stranded_span: (err_l_loc, self.previous_right_loc),
+                            });
+                        }
+                        None => {}
+                    }
+
+                    if let Some((cmd, cmd_pos)) = self.command.replace((ident.value, (l, r))) {
+                        return Some((
+                            ast::Command {
+                                name: cmd,
+                                name_span: cmd_pos,
+                                args: std::mem::take(&mut self.arguments),
+                            },
+                            error,
+                        ));
                     }
                 }
+                token::Token::Literal(literal) => match self.capturing_error {
+                    None if self.command.is_none() => {
+                        self.capturing_error = Some((l, CapturedErrorKind::Stranded));
+                    }
+                    Some(_) => {}
+                    None => {
+                        let push_res = self.arguments.try_push(ast::Argument {
+                            literal,
+                            span: (l, r),
+                        });
+                        if push_res.is_err() {
+                            self.capturing_error = Some((l, CapturedErrorKind::Overflow));
+                        }
+                    }
+                },
             }
+
+            self.previous_right_loc = r;
         }
 
-        prev_r_loc = r;
+        self.command.take().map(|(cmd, cmd_pos)| {
+            (
+                ast::Command {
+                    name: cmd,
+                    name_span: cmd_pos,
+                    args: std::mem::take(&mut self.arguments),
+                },
+                error,
+            )
+        })
     }
-
-    if let Some((cmd, cmd_pos)) = command {
-        commands.push(Command {
-            name: cmd,
-            name_pos: cmd_pos,
-            args: arguments,
-        });
-    }
-
-    (Icon { commands }, errors)
 }

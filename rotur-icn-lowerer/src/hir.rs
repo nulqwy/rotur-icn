@@ -8,7 +8,7 @@ pub struct IconHir {
 
 #[derive(Debug, Clone)]
 pub struct Operation {
-    pub cmd_pos: token::Pos,
+    pub cmd_span: token::Span,
     pub kind: OperationKind,
 }
 

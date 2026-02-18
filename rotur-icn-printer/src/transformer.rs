@@ -130,7 +130,7 @@ impl Transformer {
             self.width = width;
 
             buf.push(hir::Operation {
-                cmd_pos,
+                cmd_span: cmd_pos,
                 kind: hir::OperationKind::SetWidth(hir::SetWidth { value: width }),
             });
         }
@@ -139,12 +139,15 @@ impl Transformer {
             self.colour = el.colour;
 
             buf.push(hir::Operation {
-                cmd_pos,
+                cmd_span: cmd_pos,
                 kind: hir::OperationKind::SetColour(hir::SetColour { value: el.colour }),
             });
         }
 
-        buf.push(hir::Operation { cmd_pos, kind: op });
+        buf.push(hir::Operation {
+            cmd_span: cmd_pos,
+            kind: op,
+        });
 
         buf
     }

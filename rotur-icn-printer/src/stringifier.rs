@@ -13,7 +13,7 @@ pub fn stringify(ast: &ast::Icon, oneline: bool) -> String {
         write!(buf, "{}", &cmd.name).unwrap();
 
         for arg in &cmd.args {
-            match &arg.lit {
+            match &arg.literal {
                 token::Literal::Number(n) => write!(buf, " {n}").unwrap(),
                 // TODO handle those which are representable as #fff
                 // TODO handle alpha somehow, maybe panic?

@@ -1,9 +1,9 @@
 use std::fmt;
 
-use rotur_icn_lexer::{display::PosDisplay, token};
+use rotur_icn_lexer::{display::SpanDisplay, token};
 
 pub struct Error {
-    pub cmd_pos: token::Pos,
+    pub cmd_span: token::Span,
     pub cmd_index: usize,
     pub kind: ErrorKind,
 }
@@ -18,7 +18,7 @@ impl fmt::Display for Error {
             f,
             "cmd #{} {} : {}",
             self.cmd_index + 1,
-            PosDisplay(&self.cmd_pos),
+            SpanDisplay(&self.cmd_span),
             self.kind,
         )
     }

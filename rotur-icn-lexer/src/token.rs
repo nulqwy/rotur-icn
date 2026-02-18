@@ -1,10 +1,14 @@
 use rotur_icn_units::{Colour, Number};
 
-pub type Loc = lexgen_util::Loc;
-pub type Pos = (Loc, Loc);
-pub type PToken<'s> = (Loc, Token<'s>, Loc);
+use crate::Error;
 
-#[derive(Debug, Clone)]
+pub type Loc = lexgen_util::Loc;
+pub type Span = (Loc, Loc);
+pub type PToken<'s> = (Loc, Token<'s>, Loc);
+pub type FToken<'s> = (Option<Token<'s>>, Option<Error>);
+pub type PFToken<'s> = (Loc, FToken<'s>, Loc);
+
+#[derive(Debug, Clone, Copy)]
 pub enum Token<'s> {
     Identifier(Identifier<'s>),
     Literal(Literal),

@@ -10,12 +10,12 @@ pub struct Icon<'s> {
 #[derive(Debug, Clone)]
 pub struct Command<'s> {
     pub name: &'s str,
-    pub name_pos: token::Pos,
+    pub name_span: token::Span,
     pub args: ArrayVec<Argument, 6>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Argument {
-    pub lit: token::Literal,
-    pub pos: token::Pos,
+    pub literal: token::Literal,
+    pub span: token::Span,
 }

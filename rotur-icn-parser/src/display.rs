@@ -39,6 +39,6 @@ impl fmt::Display for Command<'_> {
 
 impl fmt::Display for Argument {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.lit)
+        write!(f, "{}", self.literal)
     }
 }

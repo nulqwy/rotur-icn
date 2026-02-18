@@ -1,11 +1,11 @@
 use std::fmt;
 
-use rotur_icn_lexer::{display::PosDisplay, token};
+use rotur_icn_lexer::{display::SpanDisplay, token};
 use rotur_icn_units::Number;
 
 #[derive(Debug, Clone)]
 pub struct Error {
-    pub cmd_pos: token::Pos,
+    pub cmd_span: token::Span,
     pub cmd_index: usize,
     pub kind: ErrorKind,
 }
@@ -13,7 +13,7 @@ pub struct Error {
 #[derive(Debug, Clone)]
 pub enum ErrorKind {
     TooManyArguments {
-        overflow_pos: token::Pos,
+        overflow_span: token::Span,
         exp: usize,
         got: usize,
     },
@@ -23,17 +23,17 @@ pub enum ErrorKind {
         got: usize,
     },
     UnexpectedLiteralKind {
-        arg_pos: token::Pos,
+        arg_span: token::Span,
         arg_index: usize,
         exp: token::LiteralKind,
         got: token::LiteralKind,
     },
     InvalidNumericColour {
-        arg_pos: token::Pos,
+        arg_span: token::Span,
         arg_index: usize,
     },
     ArgOutOfRange {
-        arg_pos: token::Pos,
+        arg_span: token::Span,
         arg_index: usize,
         range_start: Option<(Number, bool)>,
         range_end: Option<(Number, bool)>,
@@ -47,7 +47,7 @@ impl fmt::Display for Error {
             f,
             "cmd #{} {} : {}",
             self.cmd_index + 1,
-            PosDisplay(&self.cmd_pos),
+            SpanDisplay(&self.cmd_span),
             self.kind
         )
     }
@@ -57,7 +57,7 @@ impl fmt::Display for ErrorKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::TooManyArguments {
-                overflow_pos: _,
+                overflow_span: _,
                 exp,
                 got,
             } => {
@@ -71,7 +71,7 @@ impl fmt::Display for ErrorKind {
                 write!(f, "the command expected more ({exp}) args, received {got}")
             }
             Self::UnexpectedLiteralKind {
-                arg_pos: _,
+                arg_span: _,
                 arg_index,
                 exp,
                 got,
@@ -83,7 +83,7 @@ impl fmt::Display for ErrorKind {
                 )
             }
             Self::InvalidNumericColour {
-                arg_pos: _,
+                arg_span: _,
                 arg_index,
             } => {
                 write!(
@@ -93,7 +93,7 @@ impl fmt::Display for ErrorKind {
                 )
             }
             Self::ArgOutOfRange {
-                arg_pos: _,
+                arg_span: _,
                 arg_index,
                 range_start,
                 range_end,

@@ -12,7 +12,7 @@ impl Distribution<hir::IconHir> for IcnSampler {
         hir::IconHir {
             operations: self
                 .map(|kind| hir::Operation {
-                    cmd_pos: (token::Loc::default(), token::Loc::default()),
+                    cmd_span: (token::Loc::default(), token::Loc::default()),
                     kind,
                 })
                 .sample_iter(rng)

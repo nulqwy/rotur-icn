@@ -1,10 +1,10 @@
 use std::fmt;
 
-use super::{Pos, display::PosDisplay};
+use super::{Span, display::SpanDisplay};
 
 #[derive(Debug, Clone)]
 pub struct Error {
-    pub pos: Pos,
+    pub span: Span,
     pub kind: ErrorKind,
 }
 
@@ -18,7 +18,7 @@ pub enum ErrorKind {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{} {}", PosDisplay(&self.pos), self.kind,)
+        write!(f, "{} {}", SpanDisplay(&self.span), self.kind,)
     }
 }
 

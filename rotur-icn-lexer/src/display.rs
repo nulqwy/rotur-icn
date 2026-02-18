@@ -1,6 +1,6 @@
 use std::fmt;
 
-use super::{Identifier, Literal, LiteralKind, Loc, Pos, Token};
+use super::{Identifier, Literal, LiteralKind, Loc, Span, Token};
 
 pub struct LocDisplay<'l>(pub &'l Loc);
 
@@ -10,9 +10,9 @@ impl fmt::Display for LocDisplay<'_> {
     }
 }
 
-pub struct PosDisplay<'p>(pub &'p Pos);
+pub struct SpanDisplay<'p>(pub &'p Span);
 
-impl fmt::Display for PosDisplay<'_> {
+impl fmt::Display for SpanDisplay<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,

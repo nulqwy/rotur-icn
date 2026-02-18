@@ -122,11 +122,11 @@ fn make_command<'s>(
 ) -> ast::Command<'s> {
     ast::Command {
         name,
-        name_pos: op.cmd_pos,
+        name_span: op.cmd_span,
         args: args
             .map(|lit| ast::Argument {
-                lit,
-                pos: op.cmd_pos,
+                literal: lit,
+                span: op.cmd_span,
             })
             .collect(),
     }
