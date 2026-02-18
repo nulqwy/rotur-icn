@@ -102,18 +102,28 @@ impl Renderer {
         let scaled_buf_size = self.scaled_buf_size();
 
         // FIXME forbid too large buf sizes
-        let rel_x_offset = (scaled_buf_size.0 / 2) as Number;
-        let rel_y_offset = (scaled_buf_size.1 / 2) as Number;
+        let rel_offset = Vector {
+            x: -(scaled_buf_size.0 as Number),
+            y: scaled_buf_size.1 as Number,
+        } / 2.;
 
-        for y in 0..scaled_buf_size.1 {
-            for x in 0..scaled_buf_size.0 {
-                let pixel_i = (y * scaled_buf_size.0 + x) * 4;
-                let pixel = &mut buf[pixel_i..pixel_i + 4];
+        let inv_scaling = 1. / self.scaling;
 
-                let rel_x = (x as Number) - rel_x_offset;
-                let rel_y = -(y as Number) + rel_y_offset;
+        let coords = (0..scaled_buf_size.1)
+            .flat_map(|y| (0..scaled_buf_size.0).map(move |x| (x, y)))
+            .map(|(x, y)| Vector {
+                x: x as _,
+                y: y as _,
+            });
 
-                let rel_pos = Vector { x: rel_x, y: rel_y } / self.scaling + self.camera_pos;
+        buf.as_chunks_mut::<4>()
+            .0
+            .iter_mut()
+            .zip(coords)
+            .for_each(|(pixel, coord)| {
+                // XXX interestingly, if i distribute the mul and precompute the constant part,
+                // the performance worsens (by noise levels, but consisently)
+                let rel_pos = (coord.conj() + rel_offset) * inv_scaling + self.camera_pos;
 
                 let new_col = icon
                     .shapes
@@ -125,7 +135,6 @@ impl Renderer {
                 let new_pixel = new_col.to_bytes();
 
                 pixel.copy_from_slice(&new_pixel);
-            }
-        }
+            });
     }
 }
