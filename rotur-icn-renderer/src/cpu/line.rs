@@ -53,4 +53,8 @@ impl Shape for Line {
 
         d <= self.outline
     }
+
+    fn possibly_within(&self, bounds: (Vector, Vector)) -> bool {
+        Vector::bounds_intersect(self.bb, bounds)
+    }
 }

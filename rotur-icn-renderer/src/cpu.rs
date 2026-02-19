@@ -1,7 +1,11 @@
 use rotur_icn_resolver::lir;
 use rotur_icn_units::{Colour, Number, Vector};
+use smallvec::SmallVec;
 
-use crate::cpu::shape::ComputedShapesBundle;
+use crate::{cpu::shape::Shape, divider::Region};
+
+use colour::InternalColour;
+use shape::ComputedShapesBundle;
 
 mod arc;
 mod circle;
@@ -36,6 +40,9 @@ impl Default for Renderer {
 }
 
 impl Renderer {
+    const REGION_SIZE: usize = 64;
+    const REGION_ELEMENTS_STACK_BUFFER_SIZE: usize = 64;
+
     pub fn new(
         canvas: Vector,
         scaling: Number,
@@ -85,56 +92,100 @@ impl Renderer {
     /// - If buffer length is not of correct size (4 bytes per pixel)
     ///
     /// - If no ICN is loaded
-    #[expect(clippy::cast_precision_loss)]
-    pub fn render(&mut self, buf: &mut [u8]) {
+    pub fn render(&self, buf: &mut [u8]) {
         assert_eq!(
             buf.len(),
             self.scaled_buf_size_linear(),
             "buffer must be of correct size"
         );
 
+        let buf_size = self.scaled_buf_size();
         let icon = self
             .icon
             .as_ref()
             .expect("icon should have been loaded by this point");
-        let bg_colour = self.background_colour.into();
-
-        let scaled_buf_size = self.scaled_buf_size();
-
-        // FIXME forbid too large buf sizes
+        #[expect(clippy::cast_precision_loss)]
         let rel_offset = Vector {
-            x: -(scaled_buf_size.0 as Number),
-            y: scaled_buf_size.1 as Number,
+            x: -(buf_size.0 as Number),
+            y: buf_size.1 as Number,
         } / 2.;
 
-        let inv_scaling = 1. / self.scaling;
-
-        let coords = (0..scaled_buf_size.1)
-            .flat_map(|y| (0..scaled_buf_size.0).map(move |x| (x, y)))
-            .map(|(x, y)| Vector {
-                x: x as _,
-                y: y as _,
+        Region::new_from_zero(buf_size)
+            .split((Self::REGION_SIZE, Self::REGION_SIZE))
+            .for_each(|region| {
+                self.render_region(
+                    (buf, buf_size),
+                    icon,
+                    rel_offset,
+                    self.background_colour.into(),
+                    1. / self.scaling,
+                    &region,
+                );
             });
+    }
 
-        buf.as_chunks_mut::<4>()
-            .0
-            .iter_mut()
-            .zip(coords)
-            .for_each(|(pixel, coord)| {
-                // XXX interestingly, if i distribute the mul and precompute the constant part,
-                // the performance worsens (by noise levels, but consisently)
-                let rel_pos = (coord.conj() + rel_offset) * inv_scaling + self.camera_pos;
+    fn render_region(
+        &self,
+        (buf, buf_size): (&mut [u8], (usize, usize)),
+        icon: &ComputedShapesBundle,
+        rel_offset: Vector,
+        bg_colour: InternalColour,
+        inv_scaling: f32,
+        region: &Region,
+    ) {
+        // FIXME forbid too large canvas sizes
+        #[expect(clippy::cast_precision_loss)]
+        let to_vec = |coord: (usize, usize)| Vector {
+            x: coord.0 as _,
+            y: coord.1 as _,
+        };
+        // XXX interestingly, if i distribute the mul and precompute the constant part,
+        // the performance worsens (by noise levels, but consisently)
+        let transform_pos = |pos: Vector| (pos.conj() + rel_offset) * inv_scaling + self.camera_pos;
 
-                let new_col = icon
-                    .shapes
+        let region_points = (
+            transform_pos(to_vec(region.start())),
+            transform_pos(to_vec(region.end())),
+        );
+
+        let region_bounds = (
+            Vector {
+                x: region_points.0.x,
+                y: region_points.1.y,
+            },
+            Vector {
+                x: region_points.1.x,
+                y: region_points.0.y,
+            },
+        );
+
+        let possible_els = icon
+            .shapes
+            .iter()
+            .filter(|s| s.possibly_within(region_bounds))
+            .collect::<SmallVec<[_; Self::REGION_ELEMENTS_STACK_BUFFER_SIZE]>>();
+
+        (region.y.0..region.y.1)
+            .flat_map(|y| (region.x.0..region.x.1).map(move |x| (x, y)))
+            .map(|coord| {
+                (
+                    {
+                        let pixel_i = (coord.0 + coord.1 * buf_size.0) * 4;
+                        pixel_i..pixel_i + 4
+                    },
+                    transform_pos(to_vec(coord)),
+                )
+            })
+            .for_each(|(pixel, pos)| {
+                let new_col = possible_els
                     .iter()
                     .rev()
-                    .find_map(|sp| sp.test_with_colour(rel_pos))
+                    .find_map(|sp| sp.test_with_colour(pos))
                     .unwrap_or(bg_colour);
 
                 let new_pixel = new_col.to_bytes();
 
-                pixel.copy_from_slice(&new_pixel);
+                buf[pixel].copy_from_slice(&new_pixel);
             });
     }
 }

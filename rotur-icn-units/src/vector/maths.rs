@@ -172,8 +172,55 @@ impl Vector {
         }
     }
 
+    // TODO move out of Vector
+
     pub fn within(self, bb: (Self, Self)) -> bool {
         (bb.0.x <= self.x && self.x <= bb.1.x) && (bb.0.y <= self.y && self.y <= bb.1.y)
+    }
+
+    pub fn bounds_intersect(a: (Self, Self), b: (Self, Self)) -> bool {
+        fn bounds_x(bb: (Vector, Vector)) -> (f32, f32) {
+            (bb.0.x, bb.1.x)
+        }
+
+        fn bounds_y(bb: (Vector, Vector)) -> (f32, f32) {
+            (bb.0.y, bb.1.y)
+        }
+
+        fn point_within(p: f32, b: (f32, f32)) -> bool {
+            b.0 <= p && p <= b.1
+        }
+
+        fn axis_overlap(a: (f32, f32), b: (f32, f32)) -> bool {
+            fn inner(a: (f32, f32), b: (f32, f32)) -> bool {
+                point_within(a.0, b) || point_within(a.1, b)
+            }
+
+            inner(a, b) || inner(b, a)
+        }
+
+        axis_overlap(bounds_x(a), bounds_x(b)) && axis_overlap(bounds_y(a), bounds_y(b))
+    }
+
+    pub fn bounds_contained(outer: (Self, Self), inner: (Self, Self)) -> bool {
+        fn bounds_x(bb: (Vector, Vector)) -> (f32, f32) {
+            (bb.0.x, bb.1.x)
+        }
+
+        fn bounds_y(bb: (Vector, Vector)) -> (f32, f32) {
+            (bb.0.y, bb.1.y)
+        }
+
+        fn point_within(p: f32, b: (f32, f32)) -> bool {
+            b.0 <= p && p <= b.1
+        }
+
+        fn axis_contained(outer: (f32, f32), inner: (f32, f32)) -> bool {
+            point_within(inner.0, outer) && point_within(inner.1, outer)
+        }
+
+        axis_contained(bounds_x(outer), bounds_x(inner))
+            && axis_contained(bounds_y(outer), bounds_y(inner))
     }
 }
 

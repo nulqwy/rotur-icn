@@ -32,7 +32,7 @@ impl Triangle {
         );
 
         Self {
-            // TODO add internal culling box
+            // TODO inner bounding box
             bb: crate::fitter::triangle::get_bounds(el),
             a: el.a,
             b: el.b,
@@ -102,5 +102,9 @@ impl Shape for Triangle {
         };
 
         d <= self.outline
+    }
+
+    fn possibly_within(&self, bounds: (Vector, Vector)) -> bool {
+        Vector::bounds_intersect(self.bb, bounds)
     }
 }

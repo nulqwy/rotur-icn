@@ -78,4 +78,17 @@ impl Shape for Arc {
 
         d <= self.outline
     }
+
+    fn possibly_within(&self, bounds: (Vector, Vector)) -> bool {
+        if !Vector::bounds_intersect(self.bb, bounds) {
+            return false;
+        }
+
+        // TODO [see Disk::possibly_within()]
+        // XXX consider moving into test()'s culling step
+        let inner_radius = self.inner_outline.sqrt() * std::f32::consts::FRAC_1_SQRT_2;
+        let inner_bb = (self.centre - inner_radius, self.centre + inner_radius);
+
+        !Vector::bounds_contained(inner_bb, bounds)
+    }
 }

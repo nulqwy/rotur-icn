@@ -5,6 +5,8 @@ use super::{arc, circle, colour::InternalColour, curve, disk, ellipse, line, rec
 
 pub trait Shape {
     fn test(&self, pos: Vector) -> bool;
+
+    fn possibly_within(&self, bounds: (Vector, Vector)) -> bool;
 }
 
 pub struct ComputedShapesBundle {
@@ -75,6 +77,10 @@ impl Shape for ComputedShape {
     fn test(&self, pos: Vector) -> bool {
         self.kind.test(pos)
     }
+
+    fn possibly_within(&self, bounds: (Vector, Vector)) -> bool {
+        self.kind.possibly_within(bounds)
+    }
 }
 
 impl Shape for ComputedShapeKind {
@@ -88,6 +94,19 @@ impl Shape for ComputedShapeKind {
             ComputedShapeKind::Arc(arc) => arc.test(pos),
             ComputedShapeKind::Ellipse(ellipse) => ellipse.test(pos),
             ComputedShapeKind::Curve(curve) => curve.test(pos),
+        }
+    }
+
+    fn possibly_within(&self, bounds: (Vector, Vector)) -> bool {
+        match self {
+            ComputedShapeKind::Line(line) => line.possibly_within(bounds),
+            ComputedShapeKind::Disk(disk) => disk.possibly_within(bounds),
+            ComputedShapeKind::Circle(circle) => circle.possibly_within(bounds),
+            ComputedShapeKind::Rectangle(rectangle) => rectangle.possibly_within(bounds),
+            ComputedShapeKind::Triangle(triangle) => triangle.possibly_within(bounds),
+            ComputedShapeKind::Arc(arc) => arc.possibly_within(bounds),
+            ComputedShapeKind::Ellipse(ellipse) => ellipse.possibly_within(bounds),
+            ComputedShapeKind::Curve(curve) => curve.possibly_within(bounds),
         }
     }
 }

@@ -13,3 +13,4 @@ workspace = true
 [dependencies]
 rotur-icn-resolver = { version = "0.1.0", path = "../rotur-icn-resolver" }
 rotur-icn-units = { version = "0.1.0", path = "../rotur-icn-units" }
+smallvec = { version = "1.15.1", features = ["union"] }

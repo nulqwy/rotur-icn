@@ -41,4 +41,22 @@ impl Shape for Rectangle {
             (true, true) => d_vec.length_sq() <= self.outline.powi(2),
         }
     }
+
+    fn possibly_within(&self, bounds: (Vector, Vector)) -> bool {
+        let edges = (self.centre - self.halfsizes, self.centre + self.halfsizes);
+
+        let outer_bb = (edges.0 - self.outline, edges.1 + self.outline);
+
+        if Vector::bounds_intersect(outer_bb, bounds) {
+            if self.filled {
+                true
+            } else {
+                let inner_bb = (edges.0 + self.outline, edges.1 - self.outline);
+
+                !Vector::bounds_contained(inner_bb, bounds)
+            }
+        } else {
+            false
+        }
+    }
 }

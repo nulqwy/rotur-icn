@@ -30,7 +30,7 @@ impl Ellipse {
         let axis_v = axis_inverse * Vector::new(axis2.x - axis2.y).conj();
 
         Self {
-            // TODO add internal culling box
+            // TODO inner bb
             bb: crate::fitter::ellipse::get_bounds(el),
             centre: el.centre,
             axis: el.axis,
@@ -66,5 +66,9 @@ impl Shape for Ellipse {
         let d = (p_abs - nearest_abs).length_sq();
 
         d <= self.outline
+    }
+
+    fn possibly_within(&self, bounds: (Vector, Vector)) -> bool {
+        Vector::bounds_intersect(self.bb, bounds)
     }
 }
