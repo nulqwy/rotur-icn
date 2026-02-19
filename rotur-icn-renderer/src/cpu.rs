@@ -1,3 +1,5 @@
+#[cfg(feature = "rayon")]
+use rayon::iter::{ParallelBridge, ParallelIterator};
 use rotur_icn_resolver::lir;
 use rotur_icn_units::{Colour, Number, Vector};
 use smallvec::SmallVec;
@@ -110,9 +112,33 @@ impl Renderer {
             y: buf_size.1 as Number,
         } / 2.;
 
-        Region::new_from_zero(buf_size)
-            .split((Self::REGION_SIZE, Self::REGION_SIZE))
-            .for_each(|region| {
+        let regions = Region::new_from_zero(buf_size).split((Self::REGION_SIZE, Self::REGION_SIZE));
+
+        #[cfg(feature = "rayon")]
+        {
+            #[derive(Debug, Clone, Copy)]
+            struct BufWrapper(*mut u8);
+
+            unsafe impl Sync for BufWrapper {}
+
+            let buf_wrapper = BufWrapper(buf.as_mut_ptr());
+
+            regions.par_bridge().for_each(|region| {
+                let _ = &buf_wrapper;
+                self.render_region(
+                    (buf_wrapper.0, buf_size),
+                    icon,
+                    rel_offset,
+                    self.background_colour.into(),
+                    1. / self.scaling,
+                    &region,
+                );
+            });
+        }
+
+        #[cfg(not(feature = "rayon"))]
+        {
+            regions.for_each(|region| {
                 self.render_region(
                     (buf, buf_size),
                     icon,
@@ -122,11 +148,13 @@ impl Renderer {
                     &region,
                 );
             });
+        }
     }
 
     fn render_region(
         &self,
-        (buf, buf_size): (&mut [u8], (usize, usize)),
+        #[cfg(feature = "rayon")] (buf, buf_size): (*mut u8, (usize, usize)),
+        #[cfg(not(feature = "rayon"))] (buf, buf_size): (&mut [u8], (usize, usize)),
         icon: &ComputedShapesBundle,
         rel_offset: Vector,
         bg_colour: InternalColour,
@@ -185,7 +213,15 @@ impl Renderer {
 
                 let new_pixel = new_col.to_bytes();
 
-                buf[pixel].copy_from_slice(&new_pixel);
+                #[cfg(feature = "rayon")]
+                unsafe {
+                    buf.offset(pixel.start.try_into().unwrap())
+                        .copy_from_nonoverlapping(new_pixel.as_ptr(), 4);
+                }
+                #[cfg(not(feature = "rayon"))]
+                {
+                    buf[pixel].copy_from_slice(&new_pixel);
+                }
             });
     }
 }

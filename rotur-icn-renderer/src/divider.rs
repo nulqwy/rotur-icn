@@ -30,7 +30,7 @@ impl Region {
         (self.x.1 - self.x.0, self.y.1 - self.y.0)
     }
 
-    pub fn split(&self, (side_x, side_y): (usize, usize)) -> impl Iterator<Item = Region> {
+    pub fn split(self, (side_x, side_y): (usize, usize)) -> impl Iterator<Item = Region> {
         Self::split_side(self.y, side_y)
             .flat_map(move |y_axis| {
                 Self::split_side(self.x, side_x).map(move |x_axis| (x_axis, y_axis))

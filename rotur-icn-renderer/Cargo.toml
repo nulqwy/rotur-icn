@@ -11,6 +11,11 @@ readme = "readme.md"
 workspace = true
 
 [dependencies]
+rayon = { version = "1.11.0", optional = true }
 rotur-icn-resolver = { version = "0.1.0", path = "../rotur-icn-resolver" }
 rotur-icn-units = { version = "0.1.0", path = "../rotur-icn-units" }
 smallvec = { version = "1.15.1", features = ["union"] }
+
+[features]
+default = ["rayon"]
+rayon = ["dep:rayon"]
