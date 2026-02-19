@@ -116,7 +116,7 @@ fn process(
     if print_perf {
         let perf = end - start;
         eprintln!(
-            "Time taken to process the ICN: {:.3}υs",
+            "Time taken to process the ICN: {:.3}μs",
             perf.as_secs_f64() * 1e6
         );
     }
