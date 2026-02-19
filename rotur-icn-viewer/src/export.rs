@@ -1,5 +1,5 @@
 use std::{
-    io::{self, Write},
+    io::{self, BufWriter, Write},
     path::Path,
     time::Instant,
 };
@@ -18,7 +18,7 @@ use crate::{
     abort::abort,
     error::{
         EXIT_CODE_FAILED_DISPLAY_DIAGNOSTICS, EXIT_CODE_FAILED_OPEN_FILE,
-        EXIT_CODE_FAILED_READ_FILE, EXIT_CODE_FAILED_WRITE_FILE, EXIT_CODE_FOUND_ERRORS,
+        EXIT_CODE_FAILED_READ_FILE, EXIT_CODE_FAILED_WRITE_PNG, EXIT_CODE_FOUND_ERRORS,
         FailureError,
     },
     options::ExportOptions,
@@ -249,7 +249,7 @@ fn read(path: Option<&Path>) -> String {
 }
 
 fn save(path: Option<&Path>, buf: &[u8], buf_size: (usize, usize)) {
-    let mut writer = if let Some(file) = path {
+    let writer = BufWriter::new(if let Some(file) = path {
         Box::new(
             std::fs::OpenOptions::new()
                 .write(true)
@@ -262,22 +262,21 @@ fn save(path: Option<&Path>, buf: &[u8], buf_size: (usize, usize)) {
         ) as Box<dyn Write>
     } else {
         Box::new(std::io::stdout()) as Box<dyn Write>
-    };
+    });
 
-    write!(
+    let mut encoder = png::Encoder::new(
         writer,
-        "P7\n\
-        WIDTH {}\n\
-        HEIGHT {}\n\
-        DEPTH 4\n\
-        MAXVAL 255\n\
-        TUPLTYPE RGB_ALPHA\n\
-        ENDHDR\n",
-        buf_size.0, buf_size.1
-    )
-    .unwrap_or_else(|err| abort(&FailureError::WriteFile(err), EXIT_CODE_FAILED_WRITE_FILE));
+        buf_size.0.try_into().unwrap(),
+        buf_size.1.try_into().unwrap(),
+    );
+    encoder.set_color(png::ColorType::Rgba);
+    encoder.set_depth(png::BitDepth::Eight);
 
-    writer
-        .write_all(buf)
-        .unwrap_or_else(|err| abort(&FailureError::WriteFile(err), EXIT_CODE_FAILED_WRITE_FILE));
+    let mut png_writer = encoder.write_header().unwrap_or_else(|err| {
+        abort(&FailureError::WritePng(err), EXIT_CODE_FAILED_WRITE_PNG);
+    });
+
+    png_writer.write_image_data(buf).unwrap_or_else(|err| {
+        abort(&FailureError::WritePng(err), EXIT_CODE_FAILED_WRITE_PNG);
+    });
 }

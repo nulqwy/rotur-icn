@@ -45,7 +45,7 @@ pub struct ExportOptions {
 
     #[options(
         no_short,
-        help = "path to export a PAM to (default: stdout)",
+        help = "path to export a PNG to (default: stdout)",
         meta = "PATH"
     )]
     pub save: Option<PathBuf>,
