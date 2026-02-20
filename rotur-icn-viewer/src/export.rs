@@ -1,6 +1,6 @@
 use std::{
     io::{self, BufWriter, Write},
-    path::Path,
+    path::{Path, PathBuf},
     time::Instant,
 };
 
@@ -18,6 +18,7 @@ use crate::{
     abort::abort,
     error::{
         EXIT_CODE_FAILED_DISPLAY_DIAGNOSTICS, EXIT_CODE_FAILED_OPEN_FILE,
+        EXIT_CODE_FAILED_OVERWRITE_CHECK, EXIT_CODE_FAILED_OVERWRITE_FORBIDDEN,
         EXIT_CODE_FAILED_READ_FILE, EXIT_CODE_FAILED_WRITE_PNG, EXIT_CODE_FOUND_ERRORS,
         FailureError,
     },
@@ -28,6 +29,8 @@ pub fn export(
     ExportOptions {
         help: _,
         icon: icon_path,
+        overwrite,
+        forbid_overwrite,
         save: save_path,
         fit,
         pad,
@@ -47,6 +50,8 @@ pub fn export(
         chosen_sizes,
     }: ExportOptions,
 ) {
+    let icon_save = pick_save_path(icon_path.as_deref(), save_path, overwrite, forbid_overwrite);
+
     let icon_src = read(icon_path.as_deref());
     let (icon, errors) = process(&icon_src, perf_process, (ast, hir, lir));
 
@@ -71,15 +76,9 @@ pub fn export(
         chosen_sizes,
     );
 
-    let (image, image_size) = render(
-        &icon,
-        canvas / zoom,
-        scale * zoom,
-        camera,
-        background,
-        perf_render,
-    );
-    save(save_path.as_deref(), &image, image_size);
+    let (image, image_size) = render(&icon, canvas, scale * zoom, camera, background, perf_render);
+
+    save(icon_save.as_deref(), &image, image_size);
 
     if !errors.is_empty() {
         std::process::exit(EXIT_CODE_FOUND_ERRORS)
@@ -249,6 +248,56 @@ fn read(path: Option<&Path>) -> String {
         io::read_to_string(io::stdin())
     }
     .unwrap_or_else(|err| abort(&FailureError::ReadFile(err), EXIT_CODE_FAILED_READ_FILE))
+}
+
+fn pick_save_path(
+    icon_path: Option<&Path>,
+    save_path: Option<PathBuf>,
+    overwrite: bool,
+    forbid_ovewrite: bool,
+) -> Option<PathBuf> {
+    let final_ = save_path.or_else(|| {
+        icon_path.map(ToOwned::to_owned).map(|mut p| {
+            p.set_extension("png");
+            p
+        })
+    });
+
+    if !overwrite
+        && let Some(path) = final_.as_ref()
+        && std::fs::exists(path).unwrap_or_else(|err| {
+            abort(
+                &FailureError::Overwrite(err),
+                EXIT_CODE_FAILED_OVERWRITE_CHECK,
+            )
+        })
+    {
+        if forbid_ovewrite {
+            abort(
+                &FailureError::OverwriteForbidden,
+                EXIT_CODE_FAILED_OVERWRITE_FORBIDDEN,
+            );
+        }
+
+        eprint!("{} already exists, overwrite? [y/N] ", path.display());
+
+        let mut buf = String::new();
+        std::io::stdin().read_line(&mut buf).unwrap_or_else(|err| {
+            abort(
+                &FailureError::Overwrite(err),
+                EXIT_CODE_FAILED_OVERWRITE_CHECK,
+            )
+        });
+
+        if !["y", "yes"].contains(&buf.to_ascii_lowercase().as_str()) {
+            abort(
+                &FailureError::OverwriteForbidden,
+                EXIT_CODE_FAILED_OVERWRITE_FORBIDDEN,
+            );
+        }
+    }
+
+    final_
 }
 
 fn save(path: Option<&Path>, buf: &[u8], buf_size: (usize, usize)) {

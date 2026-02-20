@@ -45,10 +45,19 @@ pub struct ExportOptions {
 
     #[options(
         no_short,
-        help = "path to export a PNG to (default: stdout)",
+        help = "path to export a PNG to (default: filename.png)",
         meta = "PATH"
     )]
     pub save: Option<PathBuf>,
+
+    #[options(
+        short = "o",
+        help = "confirm silently overwriting the destination path"
+    )]
+    pub overwrite: bool,
+
+    #[options(short = "q", help = "forbid silently overwriting the destination path")]
+    pub forbid_overwrite: bool,
 
     #[options(short = "F", help = "fit canvas & camera to icon's edges")]
     pub fit: bool,
