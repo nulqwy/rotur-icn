@@ -1,6 +1,6 @@
 [package]
 name = "rotur-icn-pipeline"
-version = "0.1.0"
+version = "0.2.0"
 edition.workspace = true
 repository.workspace = true
 license.workspace = true
@@ -13,9 +13,9 @@ workspace = true
 [dependencies]
 codespan-reporting = { version = "0.13.1", optional = true }
 rotur-icn-lexer = { version = "0.1.0", path = "../rotur-icn-lexer" }
-rotur-icn-lowerer = { version = "0.1.0", path = "../rotur-icn-lowerer" }
-rotur-icn-parser = { version = "0.1.0", path = "../rotur-icn-parser" }
-rotur-icn-resolver = { version = "0.1.0", path = "../rotur-icn-resolver" }
+rotur-icn-lowerer = { version = "0.2.0", path = "../rotur-icn-lowerer" }
+rotur-icn-parser = { version = "0.2.0", path = "../rotur-icn-parser" }
+rotur-icn-resolver = { version = "0.2.0", path = "../rotur-icn-resolver" }
 
 [features]
 diagnostics = ["dep:codespan-reporting"]

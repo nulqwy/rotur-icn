@@ -13,7 +13,7 @@ workspace = true
 [dependencies]
 arrayvec = "0.7.6"
 rotur-icn-lexer = { version = "0.1.0", path = "../rotur-icn-lexer" }
-rotur-icn-lowerer = { version = "0.1.0", path = "../rotur-icn-lowerer" }
-rotur-icn-parser = { version = "0.1.0", path = "../rotur-icn-parser" }
-rotur-icn-resolver = { version = "0.1.0", path = "../rotur-icn-resolver" }
-rotur-icn-units = { version = "0.1.0", path = "../rotur-icn-units" }
+rotur-icn-lowerer = { version = "0.2.0", path = "../rotur-icn-lowerer" }
+rotur-icn-parser = { version = "0.2.0", path = "../rotur-icn-parser" }
+rotur-icn-resolver = { version = "0.2.0", path = "../rotur-icn-resolver" }
+rotur-icn-units = { version = "0.1.1", path = "../rotur-icn-units" }
