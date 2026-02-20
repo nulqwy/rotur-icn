@@ -289,7 +289,7 @@ fn pick_save_path(
             )
         });
 
-        if !["y", "yes"].contains(&buf.to_ascii_lowercase().as_str()) {
+        if !["y\n", "yes\n"].contains(&buf.to_ascii_lowercase().as_str()) {
             abort(
                 &FailureError::OverwriteForbidden,
                 EXIT_CODE_FAILED_OVERWRITE_FORBIDDEN,
