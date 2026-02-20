@@ -125,33 +125,41 @@ impl Renderer {
 
             regions.par_bridge().for_each(|region| {
                 let _ = &buf_wrapper;
-                self.render_region(
-                    (buf_wrapper.0, buf_size),
-                    icon,
-                    rel_offset,
-                    self.background_colour.into(),
-                    1. / self.scaling,
-                    &region,
-                );
+                // SAFETY: as each worker is responsible for individual unique
+                // region within the buffer there should be no issue
+                unsafe {
+                    self.render_region(
+                        (buf_wrapper.0, buf_size),
+                        icon,
+                        rel_offset,
+                        self.background_colour.into(),
+                        1. / self.scaling,
+                        &region,
+                    );
+                };
             });
         }
 
         #[cfg(not(feature = "rayon"))]
         {
-            regions.for_each(|region| {
-                self.render_region(
-                    (buf, buf_size),
-                    icon,
-                    rel_offset,
-                    self.background_colour.into(),
-                    1. / self.scaling,
-                    &region,
-                );
-            });
+            // SAFETY: with rayon disabled, there is no unsafe code involved
+            unsafe {
+                regions.for_each(|region| {
+                    self.render_region(
+                        (buf, buf_size),
+                        icon,
+                        rel_offset,
+                        self.background_colour.into(),
+                        1. / self.scaling,
+                        &region,
+                    );
+                });
+            }
         }
     }
 
-    fn render_region(
+    // FIXME do not require `unsafe` without rayon
+    unsafe fn render_region(
         &self,
         #[cfg(feature = "rayon")] (buf, buf_size): (*mut u8, (usize, usize)),
         #[cfg(not(feature = "rayon"))] (buf, buf_size): (&mut [u8], (usize, usize)),
