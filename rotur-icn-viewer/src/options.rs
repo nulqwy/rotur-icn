@@ -59,6 +59,9 @@ pub struct ExportOptions {
     #[options(short = "q", help = "forbid silently overwriting the destination path")]
     pub forbid_overwrite: bool,
 
+    #[options(no_short, help = "do not save the rendered image")]
+    pub dry: bool,
+
     #[options(short = "F", help = "fit canvas & camera to icon's edges")]
     pub fit: bool,
 

@@ -31,6 +31,7 @@ pub fn export(
         icon: icon_path,
         overwrite,
         forbid_overwrite,
+        dry,
         save: save_path,
         fit,
         pad,
@@ -50,7 +51,13 @@ pub fn export(
         chosen_sizes,
     }: ExportOptions,
 ) {
-    let icon_save = pick_save_path(icon_path.as_deref(), save_path, overwrite, forbid_overwrite);
+    let icon_save = pick_save_path(
+        icon_path.as_deref(),
+        save_path,
+        // if dry mode is enabled, act as if overwrite is silently permitted
+        overwrite | dry,
+        forbid_overwrite && !dry,
+    );
 
     let icon_src = read(icon_path.as_deref());
     let (icon, errors) = process(&icon_src, perf_process, (ast, hir, lir));
@@ -78,7 +85,9 @@ pub fn export(
 
     let (image, image_size) = render(&icon, canvas, scale * zoom, camera, background, perf_render);
 
-    save(icon_save.as_deref(), &image, image_size);
+    if !dry {
+        save(icon_save.as_deref(), &image, image_size);
+    }
 
     if !errors.is_empty() {
         std::process::exit(EXIT_CODE_FOUND_ERRORS)
