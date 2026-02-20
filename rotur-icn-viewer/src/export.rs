@@ -35,6 +35,7 @@ pub fn export(
         height,
         camera_x,
         camera_y,
+        zoom,
         scale,
         background,
         error_abort,
@@ -70,7 +71,14 @@ pub fn export(
         chosen_sizes,
     );
 
-    let (image, image_size) = render(&icon, canvas, scale, camera, background, perf_render);
+    let (image, image_size) = render(
+        &icon,
+        canvas / zoom,
+        scale * zoom,
+        camera,
+        background,
+        perf_render,
+    );
     save(save_path.as_deref(), &image, image_size);
 
     if !errors.is_empty() {
@@ -142,8 +150,8 @@ fn choose_canvas_camera(
     fit: bool,
     pad: f32,
     canvas: Option<Vector>,
-    camera_x: Option<f32>,
-    camera_y: Option<f32>,
+    camera_x: f32,
+    camera_y: f32,
     print: bool,
 ) -> (Vector, Vector) {
     let (canvas_f, camera_f) = fit
@@ -159,13 +167,8 @@ fn choose_canvas_camera(
 
     let mut final_camera = camera_f.unwrap_or(Vector::ZERO);
 
-    if let Some(x) = camera_x {
-        final_camera.x += x;
-    }
-
-    if let Some(y) = camera_y {
-        final_camera.y += y;
-    }
+    final_camera.x += camera_x;
+    final_camera.y += camera_y;
 
     if print {
         let half = final_canvas / 2.;

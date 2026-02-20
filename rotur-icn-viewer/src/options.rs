@@ -68,22 +68,32 @@ pub struct ExportOptions {
 
     #[options(
         short = "X",
-        help = "position of the camera (default: 0)",
-        meta = "PXs"
+        help = "position of the camera",
+        meta = "PXs",
+        default = "0"
     )]
-    pub camera_x: Option<Number>,
+    pub camera_x: Number,
 
     #[options(
         short = "Y",
-        help = "position of the camera (default: 0)",
-        meta = "PXs"
+        help = "position of the camera",
+        meta = "PXs",
+        default = "0"
     )]
-    pub camera_y: Option<Number>,
+    pub camera_y: Number,
+
+    #[options(
+        short = "Z",
+        help = "zooms in the canvas",
+        meta = "COEF",
+        default = "1"
+    )]
+    pub zoom: Number,
 
     #[options(
         short = "S",
-        help = "scales image for a higher resolution",
-        default = "10"
+        help = "scales the image for a higher resolution",
+        default = "25"
     )]
     pub scale: Number,
 
