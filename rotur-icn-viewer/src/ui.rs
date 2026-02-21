@@ -128,8 +128,7 @@ pub fn render(
 ) -> (Vec<u8>, (usize, usize)) {
     let start = Instant::now();
 
-    let (img, img_size) =
-        rotur_icn_pipeline::render(icon, canvas / zoom, scale * zoom, camera, background);
+    let (img, img_size) = rotur_icn_pipeline::render(icon, canvas, scale, zoom, camera, background);
 
     let end = Instant::now();
 

@@ -6,10 +6,11 @@ pub fn render(
     icon: &lir::IconLir,
     canvas: Vector,
     scale: f32,
+    zoom: f32,
     camera: Vector,
     background: Colour,
 ) -> (Vec<u8>, (usize, usize)) {
-    let mut renderer = Renderer::new(canvas, scale, camera, background);
+    let mut renderer = Renderer::new(canvas, scale / zoom, camera * zoom, background);
     renderer.load(icon);
 
     let (mut buf, buf_size) = renderer.new_buf();
