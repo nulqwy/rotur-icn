@@ -94,7 +94,7 @@ pub fn export(
     }
 }
 
-fn process(
+pub fn process(
     src: &str,
     print_perf: bool,
     (print_ast, print_high_ir, print_low_ir): (bool, bool, bool),
@@ -153,7 +153,7 @@ fn process(
 ///
 /// Either default (0; 0) or fitted is chosen first.
 /// Then it's offset by-axis.
-fn choose_canvas_camera(
+pub fn choose_canvas_camera(
     icon: &lir::IconLir,
     fit: bool,
     pad: f32,
@@ -189,7 +189,7 @@ fn choose_canvas_camera(
     (final_canvas, final_camera)
 }
 
-fn render(
+pub fn render(
     icon: &lir::IconLir,
     canvas: Vector,
     scale: f32,
@@ -217,7 +217,7 @@ fn render(
     (buf, buf_size)
 }
 
-fn display_diagnostics(file: Option<&Path>, src: &str, errors: &Errors) {
+pub fn display_diagnostics(file: Option<&Path>, src: &str, errors: &Errors) {
     let file = SimpleFile::new(
         file.map_or("<stdin>".into(), |p| {
             p.file_name().unwrap().to_string_lossy()
@@ -246,7 +246,7 @@ fn display_diagnostics(file: Option<&Path>, src: &str, errors: &Errors) {
     );
 }
 
-fn read(path: Option<&Path>) -> String {
+pub fn read(path: Option<&Path>) -> String {
     if let Some(path) = path {
         io::read_to_string(
             std::fs::File::open(path).unwrap_or_else(|err| {
@@ -259,7 +259,7 @@ fn read(path: Option<&Path>) -> String {
     .unwrap_or_else(|err| abort(&FailureError::ReadFile(err), EXIT_CODE_FAILED_READ_FILE))
 }
 
-fn pick_save_path(
+pub fn pick_save_path(
     icon_path: Option<&Path>,
     save_path: Option<PathBuf>,
     overwrite: bool,
@@ -309,7 +309,7 @@ fn pick_save_path(
     final_
 }
 
-fn save(path: Option<&Path>, buf: &[u8], buf_size: (usize, usize)) {
+pub fn save(path: Option<&Path>, buf: &[u8], buf_size: (usize, usize)) {
     let writer = BufWriter::new(if let Some(file) = path {
         Box::new(
             std::fs::OpenOptions::new()
