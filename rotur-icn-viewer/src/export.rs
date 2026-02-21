@@ -238,11 +238,17 @@ pub fn display_diagnostics(file: Option<&Path>, src: &str, errors: &Errors) {
             });
     }
 
+    let color = if errors.is_empty() {
+        Color::Green
+    } else {
+        Color::Red
+    };
+
     eprintln!(
         "{} {} {}",
-        Color::Red.paint("Found"),
+        color.paint("Found"),
         Style::new().bold().paint(errors.len().to_string()),
-        Color::Red.paint("errors"),
+        color.paint("errors"),
     );
 }
 
