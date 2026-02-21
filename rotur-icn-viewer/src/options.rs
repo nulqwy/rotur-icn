@@ -6,7 +6,7 @@ use rotur_icn_units::{Colour, Number};
 
 #[derive(Debug, Clone, Options)]
 pub struct ViewerOptions {
-    #[options(help = "print this message")]
+    #[options(help = "print this message (note: --help is per command)")]
     pub help: bool,
 
     #[options(command)]
@@ -22,6 +22,7 @@ impl ViewerOptions {
 #[derive(Debug, Clone, Options)]
 pub enum ViewerMode {
     Export(ExportOptions),
+    Check(CheckOptions),
     Gui(GuiOptions),
 }
 
@@ -142,6 +143,31 @@ pub struct ExportOptions {
 
 fn parse_colour(s: &str) -> Result<Colour, ParseIntError> {
     Ok(Colour::from_u32_with_alpha(u32::from_str_radix(s, 16)?))
+}
+
+#[derive(Debug, Clone, Options)]
+#[expect(
+    clippy::struct_excessive_bools,
+    reason = "not a state machine, but a flag store (partially)"
+)]
+pub struct CheckOptions {
+    #[options(help = "print this message")]
+    pub help: bool,
+
+    #[options(free, help = "path to the ICN file to check (default: stdin)")]
+    pub icon: Option<PathBuf>,
+
+    #[options(no_short, help = "print the time taken to process the ICN")]
+    pub perf_process: bool,
+
+    #[options(no_short, help = "print the AST representation of the ICN")]
+    pub ast: bool,
+
+    #[options(no_short, help = "print the HIR representation of the ICN")]
+    pub hir: bool,
+
+    #[options(no_short, help = "print the LIR representation of the ICN")]
+    pub lir: bool,
 }
 
 #[derive(Debug, Clone, Default, Options)]
