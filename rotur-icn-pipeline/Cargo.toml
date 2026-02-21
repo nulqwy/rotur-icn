@@ -12,10 +12,15 @@ workspace = true
 
 [dependencies]
 codespan-reporting = { version = "0.13.1", optional = true }
-rotur-icn-lexer = { version = "0.1.0", path = "../rotur-icn-lexer" }
-rotur-icn-lowerer = { version = "0.2.0", path = "../rotur-icn-lowerer" }
-rotur-icn-parser = { version = "0.2.0", path = "../rotur-icn-parser" }
-rotur-icn-resolver = { version = "0.2.0", path = "../rotur-icn-resolver" }
+rotur-icn-lexer = { version = "0.1.0", path = "../rotur-icn-lexer", optional = true }
+rotur-icn-lowerer = { version = "0.2.0", path = "../rotur-icn-lowerer", optional = true }
+rotur-icn-parser = { version = "0.2.0", path = "../rotur-icn-parser", optional = true }
+rotur-icn-renderer = { version = "0.2.0", path = "../rotur-icn-renderer", optional = true }
+rotur-icn-resolver = { version = "0.2.0", path = "../rotur-icn-resolver", optional = true }
+rotur-icn-units = { version = "0.1.1", path = "../rotur-icn-units", optional = true }
 
 [features]
-diagnostics = ["dep:codespan-reporting"]
+default = ["processing", "rendering"]
+processing = ["dep:rotur-icn-lexer", "dep:rotur-icn-parser", "dep:rotur-icn-lowerer", "dep:rotur-icn-resolver"]
+diagnostics = ["dep:codespan-reporting", "processing"]
+rendering = ["dep:rotur-icn-renderer", "dep:rotur-icn-units", "dep:rotur-icn-resolver"]

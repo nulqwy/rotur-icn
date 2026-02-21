@@ -1,14 +1,16 @@
 use gumdrop::Options as _;
 
-use options::ViewerOptions;
-
-use crate::{check::check, export::export, options::ViewerMode};
+use check::check;
+use export::export;
+use options::{ViewerMode, ViewerOptions};
 
 mod abort;
 mod check;
 mod error;
 mod export;
+mod file_tools;
 mod options;
+mod ui;
 
 fn main() {
     let opts = ViewerOptions::parse_args_default_or_exit();

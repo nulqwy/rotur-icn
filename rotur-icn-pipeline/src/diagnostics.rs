@@ -2,9 +2,9 @@ use std::ops::Range;
 
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 
-use crate::Errors;
+use crate::ProcessErrors;
 
-impl Errors {
+impl ProcessErrors {
     pub fn into_diagnostics(&self) -> impl Iterator<Item = Diagnostic<()>> {
         self.resolving
             .iter()

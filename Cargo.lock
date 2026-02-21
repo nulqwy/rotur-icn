@@ -303,7 +303,9 @@ dependencies = [
  "rotur-icn-lexer",
  "rotur-icn-lowerer",
  "rotur-icn-parser",
+ "rotur-icn-renderer",
  "rotur-icn-resolver",
+ "rotur-icn-units",
 ]
 
 [[package]]
@@ -362,7 +364,6 @@ dependencies = [
  "gumdrop",
  "png",
  "rotur-icn-pipeline",
- "rotur-icn-renderer",
  "rotur-icn-resolver",
  "rotur-icn-units",
 ]

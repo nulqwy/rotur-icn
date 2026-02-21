@@ -16,10 +16,5 @@ codespan-reporting = "0.13.1"
 gumdrop = "0.8.1"
 png = "0.18.1"
 rotur-icn-pipeline = { version = "0.2.0", path = "../rotur-icn-pipeline", features = ["diagnostics"] }
-rotur-icn-renderer = { version = "0.2.0", path = "../rotur-icn-renderer", default-features = false }
 rotur-icn-resolver = { version = "0.2.0", path = "../rotur-icn-resolver" }
 rotur-icn-units = { version = "0.1.1", path = "../rotur-icn-units" }
-
-[features]
-default = ["rayon"]
-rayon = ["rotur-icn-renderer/rayon"]

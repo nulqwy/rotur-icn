@@ -1,7 +1,8 @@
 use crate::{
     error::EXIT_CODE_FOUND_ERRORS,
-    export::{display_diagnostics, process, read},
+    file_tools::read,
     options::CheckOptions,
+    ui::{display_diagnostics, process},
 };
 
 pub fn check(

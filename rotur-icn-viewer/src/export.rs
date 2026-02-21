@@ -1,28 +1,10 @@
-use std::{
-    io::{self, BufWriter, Write},
-    path::{Path, PathBuf},
-    time::Instant,
-};
-
-use ansi_term::{Color, Style};
-use codespan_reporting::{
-    files::SimpleFile,
-    term::termcolor::{ColorChoice, StandardStream},
-};
-use rotur_icn_pipeline::Errors;
-use rotur_icn_renderer::{cpu::Renderer, fitter};
-use rotur_icn_resolver::lir;
-use rotur_icn_units::{Colour, Vector};
+use rotur_icn_units::Vector;
 
 use crate::{
-    abort::abort,
-    error::{
-        EXIT_CODE_FAILED_DISPLAY_DIAGNOSTICS, EXIT_CODE_FAILED_OPEN_FILE,
-        EXIT_CODE_FAILED_OVERWRITE_CHECK, EXIT_CODE_FAILED_OVERWRITE_FORBIDDEN,
-        EXIT_CODE_FAILED_READ_FILE, EXIT_CODE_FAILED_WRITE_PNG, EXIT_CODE_FOUND_ERRORS,
-        FailureError,
-    },
+    error::EXIT_CODE_FOUND_ERRORS,
+    file_tools::{pick_save_path, read, save},
     options::ExportOptions,
+    ui::{choose_canvas_camera, display_diagnostics, process, render},
 };
 
 pub fn export(
@@ -78,12 +60,14 @@ pub fn export(
             x: w,
             y: height.unwrap_or(w),
         }),
-        camera_x,
-        camera_y,
+        Vector {
+            x: camera_x,
+            y: camera_y,
+        },
         chosen_sizes,
     );
 
-    let (image, image_size) = render(&icon, canvas, scale * zoom, camera, background, perf_render);
+    let (image, image_size) = render(&icon, canvas, scale, zoom, camera, background, perf_render);
 
     if !dry {
         save(icon_save.as_deref(), &image, image_size);
@@ -92,258 +76,4 @@ pub fn export(
     if !errors.is_empty() {
         std::process::exit(EXIT_CODE_FOUND_ERRORS)
     }
-}
-
-pub fn process(
-    src: &str,
-    print_perf: bool,
-    (print_ast, print_high_ir, print_low_ir): (bool, bool, bool),
-) -> (lir::IconLir, Errors) {
-    let (icon_low_ir, errors, start, end) = if !print_ast && !print_high_ir && !print_low_ir {
-        let start = Instant::now();
-
-        let (icon_low_ir, errors) = rotur_icn_pipeline::process_final(src);
-
-        let end = Instant::now();
-
-        (icon_low_ir, errors, start, end)
-    } else {
-        let start = Instant::now();
-
-        let (icon_ast, icon_high_ir, icon_low_ir, errors) = rotur_icn_pipeline::process(src);
-
-        let end = Instant::now();
-
-        if print_ast {
-            eprintln!("--- AST ---\n{icon_ast}");
-        }
-
-        if print_high_ir {
-            eprintln!("--- HIR ---\n{icon_high_ir}");
-        }
-
-        if print_low_ir {
-            eprintln!("--- LIR ---\n{icon_low_ir}");
-        }
-
-        (icon_low_ir, errors, start, end)
-    };
-
-    if print_perf {
-        let perf = end - start;
-        eprintln!(
-            "Time taken to process the ICN: {:.3}μs",
-            perf.as_secs_f64() * 1e6
-        );
-    }
-
-    (icon_low_ir, errors)
-}
-
-/// Choose canvas and camera settings based on other settings.
-///
-/// ## Canvas
-///
-/// If fit is set, but no explicit is given, then fit is chosen.
-/// Same if only explicit is given.
-/// If both are set, then largest of two per-axis is selected.
-/// If no present, then default 20×20 is given.
-///
-/// ## Camera
-///
-/// Either default (0; 0) or fitted is chosen first.
-/// Then it's offset by-axis.
-pub fn choose_canvas_camera(
-    icon: &lir::IconLir,
-    fit: bool,
-    pad: f32,
-    canvas: Option<Vector>,
-    camera_x: f32,
-    camera_y: f32,
-    print: bool,
-) -> (Vector, Vector) {
-    let (canvas_f, camera_f) = fit
-        .then(|| fitter::fit(icon))
-        .map_or((None, None), |fc| (Some(fc.size), Some(fc.camera)));
-
-    let final_canvas = match (canvas_f, canvas) {
-        (Some(fit), Some(set)) => fit.max(set),
-        (Some(fit), None) => fit,
-        (None, Some(set)) => set,
-        (None, None) => Vector::new(20.),
-    } + pad * 2.;
-
-    let mut final_camera = camera_f.unwrap_or(Vector::ZERO);
-
-    final_camera.x += camera_x;
-    final_camera.y += camera_y;
-
-    if print {
-        let half = final_canvas / 2.;
-        let bl = final_camera - half;
-        let tr = final_camera + half;
-
-        eprintln!("Chosen canvas & camera: {final_canvas} {final_camera} ({bl} - {tr})");
-    }
-
-    (final_canvas, final_camera)
-}
-
-pub fn render(
-    icon: &lir::IconLir,
-    canvas: Vector,
-    scale: f32,
-    camera: Vector,
-    background: Colour,
-    print_perf: bool,
-) -> (Vec<u8>, (usize, usize)) {
-    let mut renderer = Renderer::new(canvas, scale, camera, background);
-    renderer.load(icon);
-
-    let (mut buf, buf_size) = renderer.new_buf();
-
-    let start = Instant::now();
-    renderer.render(&mut buf);
-    let end = Instant::now();
-
-    if print_perf {
-        let perf = end - start;
-        eprintln!(
-            "Time taken to render the ICN: {:.3}ms",
-            perf.as_secs_f64() * 1e3
-        );
-    }
-
-    (buf, buf_size)
-}
-
-pub fn display_diagnostics(file: Option<&Path>, src: &str, errors: &Errors) {
-    let file = SimpleFile::new(
-        file.map_or("<stdin>".into(), |p| {
-            p.file_name().unwrap().to_string_lossy()
-        }),
-        src,
-    );
-
-    let writer = StandardStream::stderr(ColorChoice::Auto);
-    let config = codespan_reporting::term::Config::default();
-
-    for diag in errors.into_diagnostics() {
-        codespan_reporting::term::emit_to_io_write(&mut writer.lock(), &config, &file, &diag)
-            .unwrap_or_else(|err| {
-                abort(
-                    &FailureError::DisplayDiagnostics(err),
-                    EXIT_CODE_FAILED_DISPLAY_DIAGNOSTICS,
-                )
-            });
-    }
-
-    let color = if errors.is_empty() {
-        Color::Green
-    } else {
-        Color::Red
-    };
-
-    eprintln!(
-        "{} {} {}",
-        color.paint("Found"),
-        Style::new().bold().paint(errors.len().to_string()),
-        color.paint("errors"),
-    );
-}
-
-pub fn read(path: Option<&Path>) -> String {
-    if let Some(path) = path {
-        io::read_to_string(
-            std::fs::File::open(path).unwrap_or_else(|err| {
-                abort(&FailureError::OpenFile(err), EXIT_CODE_FAILED_OPEN_FILE)
-            }),
-        )
-    } else {
-        io::read_to_string(io::stdin())
-    }
-    .unwrap_or_else(|err| abort(&FailureError::ReadFile(err), EXIT_CODE_FAILED_READ_FILE))
-}
-
-pub fn pick_save_path(
-    icon_path: Option<&Path>,
-    save_path: Option<PathBuf>,
-    overwrite: bool,
-    forbid_ovewrite: bool,
-) -> Option<PathBuf> {
-    let final_ = save_path.or_else(|| {
-        icon_path.map(ToOwned::to_owned).map(|mut p| {
-            p.set_extension("png");
-            p
-        })
-    });
-
-    if !overwrite
-        && let Some(path) = final_.as_ref()
-        && std::fs::exists(path).unwrap_or_else(|err| {
-            abort(
-                &FailureError::Overwrite(err),
-                EXIT_CODE_FAILED_OVERWRITE_CHECK,
-            )
-        })
-    {
-        if forbid_ovewrite {
-            abort(
-                &FailureError::OverwriteForbidden,
-                EXIT_CODE_FAILED_OVERWRITE_FORBIDDEN,
-            );
-        }
-
-        eprint!("{} already exists, overwrite? [y/N] ", path.display());
-
-        let mut buf = String::new();
-        std::io::stdin().read_line(&mut buf).unwrap_or_else(|err| {
-            abort(
-                &FailureError::Overwrite(err),
-                EXIT_CODE_FAILED_OVERWRITE_CHECK,
-            )
-        });
-
-        if !["y\n", "yes\n"].contains(&buf.to_ascii_lowercase().as_str()) {
-            abort(
-                &FailureError::OverwriteForbidden,
-                EXIT_CODE_FAILED_OVERWRITE_FORBIDDEN,
-            );
-        }
-    }
-
-    final_
-}
-
-pub fn save(path: Option<&Path>, buf: &[u8], buf_size: (usize, usize)) {
-    let writer = BufWriter::new(if let Some(file) = path {
-        Box::new(
-            std::fs::OpenOptions::new()
-                .write(true)
-                .create(true)
-                .truncate(true)
-                .open(file)
-                .unwrap_or_else(|err| {
-                    abort(&FailureError::OpenFile(err), EXIT_CODE_FAILED_OPEN_FILE)
-                }),
-        ) as Box<dyn Write>
-    } else {
-        Box::new(std::io::stdout()) as Box<dyn Write>
-    });
-
-    let mut encoder = png::Encoder::new(
-        writer,
-        buf_size.0.try_into().unwrap(),
-        buf_size.1.try_into().unwrap(),
-    );
-    encoder.set_color(png::ColorType::Rgba);
-    encoder.set_depth(png::BitDepth::Eight);
-
-    let mut png_writer = encoder.write_header().unwrap_or_else(|err| {
-        abort(&FailureError::WritePng(err), EXIT_CODE_FAILED_WRITE_PNG);
-    });
-
-    png_writer.write_image_data(buf).unwrap_or_else(|err| {
-        abort(&FailureError::WritePng(err), EXIT_CODE_FAILED_WRITE_PNG);
-    });
 }
