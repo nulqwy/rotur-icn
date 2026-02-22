@@ -10,7 +10,7 @@ pub fn render(
     camera: Vector,
     background: Colour,
 ) -> (Vec<u8>, (usize, usize)) {
-    let mut renderer = Renderer::new(canvas, scale / zoom, camera * zoom, background);
+    let mut renderer = Renderer::new(canvas / zoom, scale * zoom, camera, background);
     renderer.load(icon);
 
     let (mut buf, buf_size) = renderer.new_buf();
