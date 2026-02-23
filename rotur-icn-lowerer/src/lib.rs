@@ -11,7 +11,7 @@ pub mod hir;
 pub use error::{Error, ErrorKind};
 use hir::{
     ContinueLine, DrawArc, DrawCurve, DrawDisk, DrawEllipse, DrawLine, DrawRectangle, DrawTriangle,
-    MoveCentre, Operation, OperationKind, ResetCentre, SetColour, SetWidth,
+    MoveCentre, Operation, OperationKind, ResetCentre, SetColour, SetScale, SetWidth,
 };
 
 pub fn lower<'s>(
@@ -26,6 +26,7 @@ fn lower_command(cmd: &ast::Command, cmd_index: usize) -> (Option<hir::Operation
     let (kind, errors) = match cmd.name {
         SetWidth::NAME => lower_set_width(cmd, cmd_index),
         SetColour::NAME => lower_set_colour(cmd, cmd_index),
+        SetScale::NAME => lower_set_scale(cmd, cmd_index),
         DrawLine::NAME => lower_draw_line(cmd, cmd_index),
         ContinueLine::NAME => lower_continue_line(cmd, cmd_index),
         DrawDisk::NAME => lower_draw_disk(cmd, cmd_index),
@@ -80,6 +81,20 @@ fn lower_set_colour(cmd: &ast::Command, cmd_index: usize) -> (hir::OperationKind
     let value = get_colour(&mut errors, cmd, cmd_index, 0);
 
     (OperationKind::SetColour(SetColour { value }), errors)
+}
+
+fn lower_set_scale(cmd: &ast::Command, cmd_index: usize) -> (hir::OperationKind, Vec<Error>) {
+    let mut errors = Vec::new();
+
+    validate_arg_count(&mut errors, cmd, cmd_index, 1);
+
+    let mut value = get_number(&mut errors, cmd, cmd_index, 0);
+
+    if !validate_arg_value(&mut errors, cmd, cmd_index, Some((0., true)), None, 0) {
+        value = 1.;
+    }
+
+    (OperationKind::SetScale(SetScale { value }), errors)
 }
 
 fn lower_draw_line(cmd: &ast::Command, cmd_index: usize) -> (hir::OperationKind, Vec<Error>) {

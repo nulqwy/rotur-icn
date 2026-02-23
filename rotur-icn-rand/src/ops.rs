@@ -24,6 +24,15 @@ impl Distribution<hir::SetColour> for IcnSampler {
     }
 }
 
+impl Distribution<hir::SetScale> for IcnSampler {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> hir::SetScale {
+        let value_log = rng.random_range(self.width_log_range.clone());
+        hir::SetScale {
+            value: value_log.exp(),
+        }
+    }
+}
+
 impl Distribution<hir::DrawLine> for IcnSampler {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> hir::DrawLine {
         hir::DrawLine {

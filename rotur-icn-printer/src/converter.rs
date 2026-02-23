@@ -16,6 +16,9 @@ pub fn convert(hir: &hir::IconHir) -> ast::Icon<'static> {
                     hir::SetColour::NAME,
                     [token::Literal::Colour(set_colour.value)].into_iter(),
                 ),
+                hir::OperationKind::SetScale(set_scale) => {
+                    make_command(op, hir::SetScale::NAME, [n(set_scale.value)].into_iter())
+                }
                 hir::OperationKind::DrawLine(draw_line) => make_command(
                     op,
                     hir::DrawLine::NAME,

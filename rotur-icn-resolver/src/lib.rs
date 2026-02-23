@@ -24,6 +24,10 @@ pub fn resolve(
                     resolve_set_colour(s, set_colour);
                     (None, None)
                 }
+                hir::OperationKind::SetScale(set_scale) => {
+                    resolve_set_scale(s, set_scale);
+                    (None, None)
+                }
                 hir::OperationKind::DrawLine(draw_line) => {
                     (Some(resolve_draw_line(s, draw_line)), None)
                 }
@@ -73,6 +77,7 @@ struct State {
     origin: Vector,
     colour: Colour,
     width: f32,
+    scale: f32,
     last_point: Option<Vector>,
     dangling_contlines_chained: bool,
 }
@@ -83,6 +88,7 @@ impl Default for State {
             origin: Vector::ZERO,
             colour: Colour::WHITE,
             width: 5.,
+            scale: 1.,
             last_point: None,
             dangling_contlines_chained: false,
         }
@@ -94,18 +100,26 @@ impl State {
         self.last_point = last_point;
         self.dangling_contlines_chained = false;
     }
+
+    fn offset_point(&self, p: Vector) -> Vector {
+        (self.origin + p) * self.scale
+    }
 }
 
 fn resolve_set_width(s: &mut State, op: &hir::SetWidth) {
-    s.width = op.value;
+    s.width = op.value * s.scale;
 }
 
 fn resolve_set_colour(s: &mut State, op: &hir::SetColour) {
     s.colour = op.value;
 }
 
+fn resolve_set_scale(s: &mut State, op: &hir::SetScale) {
+    s.scale *= op.value;
+}
+
 fn resolve_draw_line(s: &mut State, op: &hir::DrawLine) -> lir::ElementKind {
-    let end = s.origin + op.end;
+    let end = s.offset_point(op.end);
 
     s.set_last_point(Some(end));
 
@@ -117,7 +131,7 @@ fn resolve_draw_line(s: &mut State, op: &hir::DrawLine) -> lir::ElementKind {
         })
     } else {
         lir::ElementKind::Line(lir::Line {
-            start: s.origin + op.start,
+            start: s.offset_point(op.start),
             end,
             width: s.width,
         })
@@ -136,7 +150,7 @@ fn resolve_continue_line(
             "this shouldn't happen as dangling continued lines don't define a last point",
         );
 
-        let end = s.origin + op.next;
+        let end = s.offset_point(op.next);
 
         s.set_last_point(Some(end));
 
@@ -167,7 +181,7 @@ fn resolve_continue_line(
 }
 
 fn resolve_draw_disk(s: &mut State, op: &hir::DrawDisk) -> lir::ElementKind {
-    let centre = s.origin + op.centre;
+    let centre = s.offset_point(op.centre);
 
     s.set_last_point(Some(centre));
 
@@ -178,13 +192,13 @@ fn resolve_draw_disk(s: &mut State, op: &hir::DrawDisk) -> lir::ElementKind {
 }
 
 fn resolve_draw_rectangle(s: &mut State, op: &hir::DrawRectangle) -> lir::ElementKind {
-    let bottom_left = s.origin + op.centre - op.sizes;
+    let bottom_left = s.offset_point(op.centre - op.sizes);
 
     if op.filled {
         s.set_last_point(None);
     } else {
         let top_right = op.centre + op.sizes;
-        s.set_last_point(Some(s.origin + top_right));
+        s.set_last_point(Some(s.offset_point(top_right)));
     }
 
     lir::ElementKind::Rectangle(lir::Rectangle {
@@ -201,32 +215,32 @@ fn resolve_draw_triangle(s: &mut State, op: &hir::DrawTriangle) -> lir::ElementK
     // FIXME proper f32 comp
     if op.a == op.b && op.b == op.c {
         lir::ElementKind::Disk(lir::Disk {
-            centre: s.origin + op.a,
+            centre: s.offset_point(op.a),
             radius: s.width / 2.,
         })
     } else if op.a == op.b {
         lir::ElementKind::Line(lir::Line {
-            start: s.origin + op.a,
-            end: s.origin + op.c,
+            start: s.offset_point(op.a),
+            end: s.offset_point(op.c),
             width: s.width,
         })
     } else if op.b == op.c {
         lir::ElementKind::Line(lir::Line {
-            start: s.origin + op.b,
-            end: s.origin + op.a,
+            start: s.offset_point(op.b),
+            end: s.offset_point(op.a),
             width: s.width,
         })
     } else if op.c == op.a {
         lir::ElementKind::Line(lir::Line {
-            start: s.origin + op.c,
-            end: s.origin + op.b,
+            start: s.offset_point(op.c),
+            end: s.offset_point(op.b),
             width: s.width,
         })
     } else {
         lir::ElementKind::Triangle(lir::Triangle {
-            a: s.origin + op.a,
-            b: s.origin + op.b,
-            c: s.origin + op.c,
+            a: s.offset_point(op.a),
+            b: s.offset_point(op.b),
+            c: s.offset_point(op.c),
             outline_width: s.width,
         })
     }
@@ -243,20 +257,21 @@ fn resolve_reset_centre(s: &mut State, _op: &hir::ResetCentre) {
 fn resolve_draw_arc(s: &mut State, op: &hir::DrawArc) -> lir::ElementKind {
     let direction = (op.direction * 10.).to_radians();
     let arm_angle = op.arm_angle.to_radians();
+    let radius = op.radius * s.scale;
 
     let start_angle = std::f32::consts::FRAC_PI_2 - (direction + arm_angle);
     let end_angle = std::f32::consts::FRAC_PI_2 - (direction - arm_angle);
 
-    let centre = s.origin + op.centre;
+    let centre = s.offset_point(op.centre);
 
-    let start_point = centre + Vector::new_from_length(op.radius, start_angle);
+    let start_point = centre + Vector::new_from_length(radius, start_angle);
     s.set_last_point(Some(start_point));
 
     // FIXME do relative margin
     if (op.arm_angle - 180.).abs() < 1e-7 {
         lir::ElementKind::Circle(lir::Circle {
             centre,
-            radius: op.radius,
+            radius,
             width: s.width,
         })
     } else if op.radius.abs() < 1e-9 || op.arm_angle.abs() < 1e-9 {
@@ -267,7 +282,7 @@ fn resolve_draw_arc(s: &mut State, op: &hir::DrawArc) -> lir::ElementKind {
     } else {
         lir::ElementKind::Arc(lir::Arc {
             centre,
-            radius: op.radius,
+            radius,
             width: s.width,
             start_angle,
             end_angle,
@@ -276,11 +291,11 @@ fn resolve_draw_arc(s: &mut State, op: &hir::DrawArc) -> lir::ElementKind {
 }
 
 fn resolve_draw_ellipse(s: &mut State, op: &hir::DrawEllipse) -> lir::ElementKind {
-    let minor = op.major * op.ratio;
-
+    let major = op.major * s.scale;
+    let minor = major * op.ratio;
     let direction = -op.direction.to_radians();
 
-    let centre = s.origin + op.centre;
+    let centre = s.offset_point(op.centre);
     s.set_last_point(Some(
         centre + Vector::new_from_length(minor, direction + std::f32::consts::FRAC_PI_2),
     ));
@@ -291,7 +306,7 @@ fn resolve_draw_ellipse(s: &mut State, op: &hir::DrawEllipse) -> lir::ElementKin
             radius: s.width / 2.,
         })
     } else if op.ratio < 1e-9 {
-        let to_end = Vector::new_from_length(op.major, direction);
+        let to_end = Vector::new_from_length(major, direction);
 
         lir::ElementKind::Line(lir::Line {
             start: centre - to_end,
@@ -301,10 +316,7 @@ fn resolve_draw_ellipse(s: &mut State, op: &hir::DrawEllipse) -> lir::ElementKin
     } else {
         lir::ElementKind::Ellipse(lir::Ellipse {
             centre,
-            axis: Vector {
-                x: op.major,
-                y: minor,
-            },
+            axis: Vector { x: major, y: minor },
             direction,
             outline_width: s.width,
         })
@@ -312,14 +324,14 @@ fn resolve_draw_ellipse(s: &mut State, op: &hir::DrawEllipse) -> lir::ElementKin
 }
 
 fn resolve_draw_curve(s: &mut State, op: &hir::DrawCurve) -> lir::ElementKind {
-    let end = s.origin + op.end;
+    let end = s.offset_point(op.end);
 
     s.set_last_point(Some(end));
 
     lir::ElementKind::Curve(lir::Curve {
-        start: s.origin + op.start,
+        start: s.offset_point(op.start),
         end,
-        control: s.origin + op.control,
+        control: s.offset_point(op.control),
         width: s.width,
     })
 }

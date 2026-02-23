@@ -9,6 +9,7 @@ use rotur_icn_lowerer::hir;
 pub struct Operations {
     pub set_width: bool,
     pub set_colour: bool,
+    pub set_scale: bool,
     pub draw_line: bool,
     pub continue_line: bool,
     pub draw_disk: bool,
@@ -26,6 +27,7 @@ impl Default for Operations {
         Self {
             set_width: true,
             set_colour: true,
+            set_scale: false,
             draw_line: true,
             continue_line: false,
             draw_disk: true,
@@ -44,6 +46,7 @@ impl Operations {
     pub const FULL: Self = Self {
         set_width: true,
         set_colour: true,
+        set_scale: true,
         draw_line: true,
         continue_line: true,
         draw_disk: true,
@@ -59,6 +62,7 @@ impl Operations {
     pub fn count_enabled(self) -> usize {
         usize::from(self.set_width)
             + usize::from(self.set_colour)
+            + usize::from(self.set_scale)
             + usize::from(self.draw_line)
             + usize::from(self.continue_line)
             + usize::from(self.draw_disk)
@@ -71,10 +75,11 @@ impl Operations {
             + usize::from(self.draw_curve)
     }
 
-    pub fn as_bools(self) -> [bool; 12] {
+    pub fn as_bools(self) -> [bool; 13] {
         [
             self.set_width,
             self.set_colour,
+            self.set_scale,
             self.draw_line,
             self.continue_line,
             self.draw_disk,
@@ -137,16 +142,17 @@ impl Iterator for OperationsIterator {
                 return Some(match i {
                     0 => hir::OperationKindTag::SetWidth,
                     1 => hir::OperationKindTag::SetColour,
-                    2 => hir::OperationKindTag::DrawLine,
-                    3 => hir::OperationKindTag::ContinueLine,
-                    4 => hir::OperationKindTag::DrawDisk,
-                    5 => hir::OperationKindTag::DrawRectangle,
-                    6 => hir::OperationKindTag::DrawTriangle,
-                    7 => hir::OperationKindTag::MoveCentre,
-                    8 => hir::OperationKindTag::ResetCentre,
-                    9 => hir::OperationKindTag::DrawArc,
-                    10 => hir::OperationKindTag::DrawEllipse,
-                    11 => hir::OperationKindTag::DrawCurve,
+                    2 => hir::OperationKindTag::SetScale,
+                    3 => hir::OperationKindTag::DrawLine,
+                    4 => hir::OperationKindTag::ContinueLine,
+                    5 => hir::OperationKindTag::DrawDisk,
+                    6 => hir::OperationKindTag::DrawRectangle,
+                    7 => hir::OperationKindTag::DrawTriangle,
+                    8 => hir::OperationKindTag::MoveCentre,
+                    9 => hir::OperationKindTag::ResetCentre,
+                    10 => hir::OperationKindTag::DrawArc,
+                    11 => hir::OperationKindTag::DrawEllipse,
+                    12 => hir::OperationKindTag::DrawCurve,
                     _ => unreachable!("there are in total 12 op kinds"),
                 });
             }

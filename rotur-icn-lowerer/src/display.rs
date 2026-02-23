@@ -29,6 +29,7 @@ impl fmt::Display for hir::OperationKind {
         match self {
             hir::OperationKind::SetWidth(set_width) => write!(f, "{set_width}"),
             hir::OperationKind::SetColour(set_colour) => write!(f, "{set_colour}"),
+            hir::OperationKind::SetScale(set_scale) => write!(f, "{set_scale}"),
             hir::OperationKind::DrawLine(draw_line) => write!(f, "{draw_line}"),
             hir::OperationKind::ContinueLine(continue_line) => write!(f, "{continue_line}"),
             hir::OperationKind::DrawDisk(draw_circle) => write!(f, "{draw_circle}"),
@@ -52,6 +53,12 @@ impl fmt::Display for hir::SetWidth {
 impl fmt::Display for hir::SetColour {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "set col {}", self.value)
+    }
+}
+
+impl fmt::Display for hir::SetScale {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "set scale {}", self.value)
     }
 }
 

@@ -16,6 +16,7 @@ pub struct Operation {
 pub enum OperationKind {
     SetWidth(SetWidth),
     SetColour(SetColour),
+    SetScale(SetScale),
     DrawLine(DrawLine),
     ContinueLine(ContinueLine),
     DrawDisk(DrawDisk),
@@ -32,6 +33,7 @@ pub enum OperationKind {
 pub enum OperationKindTag {
     SetWidth,
     SetColour,
+    SetScale,
     DrawLine,
     ContinueLine,
     DrawDisk,
@@ -49,6 +51,7 @@ impl OperationKind {
         match self {
             OperationKind::SetWidth(_) => OperationKindTag::SetWidth,
             OperationKind::SetColour(_) => OperationKindTag::SetColour,
+            OperationKind::SetScale(_) => OperationKindTag::SetScale,
             OperationKind::DrawLine(_) => OperationKindTag::DrawLine,
             OperationKind::ContinueLine(_) => OperationKindTag::ContinueLine,
             OperationKind::DrawDisk(_) => OperationKindTag::DrawDisk,
@@ -79,6 +82,15 @@ pub struct SetColour {
 
 impl SetColour {
     pub const NAME: &str = "c";
+}
+
+#[derive(Debug, Clone)]
+pub struct SetScale {
+    pub value: Number,
+}
+
+impl SetScale {
+    pub const NAME: &str = "scale";
 }
 
 #[derive(Debug, Clone)]

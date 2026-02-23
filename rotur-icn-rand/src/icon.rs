@@ -27,6 +27,7 @@ impl Distribution<hir::OperationKind> for IcnSampler {
         match self.sample(rng) {
             hir::OperationKindTag::SetWidth => hir::OperationKind::SetWidth(self.sample(rng)),
             hir::OperationKindTag::SetColour => hir::OperationKind::SetColour(self.sample(rng)),
+            hir::OperationKindTag::SetScale => hir::OperationKind::SetScale(self.sample(rng)),
             hir::OperationKindTag::DrawLine => hir::OperationKind::DrawLine(self.sample(rng)),
             hir::OperationKindTag::ContinueLine => {
                 hir::OperationKind::ContinueLine(self.sample(rng))
