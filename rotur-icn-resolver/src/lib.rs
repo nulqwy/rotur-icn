@@ -148,7 +148,7 @@ fn resolve_continue_line(
             })
         } else {
             lir::ElementKind::Line(lir::Line {
-                start: s.origin + start,
+                start,
                 end,
                 width: s.width,
             })
